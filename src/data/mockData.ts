@@ -119,7 +119,8 @@ export const mockCourses: Course[] = [
   {
     id: "curso-hermeneutica-1",
     title: "Fundamentos da Hermenêutica Bíblica",
-    description: "Aprenda os princípios fundamentais para ler, interpretar e aplicar o texto bíblico com fidelidade e profundidade.",
+    description:
+      "Aprenda os princípios fundamentais para ler, interpretar e aplicar o texto bíblico com fidelidade e profundidade.",
     category: "Teologia e Estudo",
     modules: [
       {
@@ -160,17 +161,17 @@ Para garantir uma leitura saudável na Escola Bíblica, recomendamos o método i
 *   **Aplicação:** Como esse princípio eterno se aplica à minha vida hoje?
 
 Com essas ferramentas em mãos, o texto sagrado se abre com muito mais clareza, evitando que coloquemos nossas próprias ideias na boca de Deus (o que chamamos de *eisegese*).
-            `
+            `,
           },
           {
             id: "licao-2",
             title: "O Contexto Literário e Histórico",
-            content: `## O Contexto é Rei\n\nNesta lição, avançaremos sobre a importância do contexto... *(Conteúdo da segunda lição)*`
-          }
-        ]
-      }
-    ]
-  }
+            content: `## O Contexto é Rei\n\nNesta lição, avançaremos sobre a importância do contexto... *(Conteúdo da segunda lição)*`,
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export const courses: Course[] = [
@@ -210,7 +211,11 @@ export const courses: Course[] = [
         id: "bibliologia",
         title: "Módulo 2 — Bibliologia",
         lessons: [
-          { id: "doutrina-escrituras", title: "A Doutrina das Escrituras", content: teologiaLesson2 },
+          {
+            id: "doutrina-escrituras",
+            title: "A Doutrina das Escrituras",
+            content: teologiaLesson2,
+          },
         ],
       },
     ],
