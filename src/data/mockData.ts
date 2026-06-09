@@ -115,8 +115,66 @@ Por serem Palavra de Deus, as Escrituras possuem autoridade suprema sobre a cons
 A Bíblia contém tudo o que é necessário para a salvação e para a vida cristã piedosa.
 
 > *Sola Scriptura* não significa "somente a Bíblia em isolamento", mas "somente a Bíblia como autoridade final" — acima da tradição, da razão e da experiência.`;
+export const mockCourses: Course[] = [
+  {
+    id: "curso-hermeneutica-1",
+    title: "Fundamentos da Hermenêutica Bíblica",
+    description: "Aprenda os princípios fundamentais para ler, interpretar e aplicar o texto bíblico com fidelidade e profundidade.",
+    category: "Teologia e Estudo",
+    modules: [
+      {
+        id: "mod-1",
+        title: "Módulo 1: O que é Interpretação?",
+        lessons: [
+          {
+            id: "licao-1",
+            title: "Introdução: A Necessidade da Hermenêutica",
+            content: `
+## O que é Hermenêutica?
+
+A palavra *hermenêutica* deriva do verbo grego *hermēneuō*, que significa "explicar, traduzir ou interpretar". Em termos simples, é a **ciência e a arte da interpretação bíblica**. 
+
+É uma ciência porque possui regras que podem ser classificadas em um sistema ordenado. É uma arte porque a comunicação é flexível e, muitas vezes, precisamos de sensibilidade para entender a intenção original do autor.
+
+> "A tarefa do intérprete não é descobrir o que o texto pode significar, mas o que o autor pretendia que ele significasse."  
+> — *Gordon Fee & Douglas Stuart*
+
+---
+
+## Por que a interpretação é necessária?
+
+Muitas pessoas afirmam: *"Eu não preciso interpretar a Bíblia, eu apenas a leio e aceito o que ela diz"*. Embora essa seja uma atitude piedosa, ela ignora uma realidade fundamental: **todo leitor é um intérprete**. 
+
+Quando lemos um texto, automaticamente passamos as palavras pelo filtro da nossa cultura, idioma e experiências. A hermenêutica nos ajuda a superar três grandes abismos:
+
+1. **O Abismo Histórico:** Estamos separados dos eventos bíblicos por milhares de anos. A forma como o mundo funcionava era drasticamente diferente.
+2. **O Abismo Cultural:** Os costumes, as tradições e a visão de mundo dos hebreus antigos ou dos cristãos do primeiro século em Israel, Grécia ou Roma não são os mesmos do leitor moderno.
+3. **O Abismo Linguístico:** A Bíblia foi escrita em Hebraico, Aramaico e Grego. Toda tradução já é, em si mesma, uma forma de interpretação.
+
+## Os Três Passos Básicos do Estudo Bíblico
+
+Para garantir uma leitura saudável na Escola Bíblica, recomendamos o método indutivo, que se divide em três etapas fundamentais:
+
+*   **Observação:** O que o texto diz? (Identificar personagens, verbos, repetições).
+*   **Interpretação:** O que o texto significava para os leitores originais?
+*   **Aplicação:** Como esse princípio eterno se aplica à minha vida hoje?
+
+Com essas ferramentas em mãos, o texto sagrado se abre com muito mais clareza, evitando que coloquemos nossas próprias ideias na boca de Deus (o que chamamos de *eisegese*).
+            `
+          },
+          {
+            id: "licao-2",
+            title: "O Contexto Literário e Histórico",
+            content: `## O Contexto é Rei\n\nNesta lição, avançaremos sobre a importância do contexto... *(Conteúdo da segunda lição)*`
+          }
+        ]
+      }
+    ]
+  }
+];
 
 export const courses: Course[] = [
+  ...mockCourses,
   {
     id: "hermeneutica",
     title: "Hermenêutica Bíblica",
