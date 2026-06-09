@@ -142,3 +142,89 @@
     color: var(--color-foreground);
   }
 }
+
+@layer base {
+  body {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  }
+  .font-serif {
+    font-family: "Lora", ui-serif, Georgia, serif;
+  }
+}
+
+/* Reader typography — Kindle/Medium inspired */
+.prose-reader {
+  font-family: "Lora", ui-serif, Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: rgb(30 41 59); /* slate-800 */
+}
+.dark .prose-reader {
+  color: rgb(226 232 240); /* slate-200 */
+}
+.prose-reader h1 {
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 2rem 0 1.25rem;
+  color: rgb(15 23 42);
+}
+.dark .prose-reader h1 { color: rgb(248 250 252); }
+.prose-reader h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 2.25rem 0 1rem;
+  color: rgb(30 58 138); /* blue-900 */
+}
+.dark .prose-reader h2 { color: rgb(96 165 250); /* blue-400 */ }
+.prose-reader h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.75rem;
+  color: rgb(15 23 42);
+}
+.dark .prose-reader h3 { color: rgb(241 245 249); }
+.prose-reader p { margin: 1.1rem 0; }
+.prose-reader a {
+  color: rgb(30 58 138);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dark .prose-reader a { color: rgb(96 165 250); }
+.prose-reader strong { font-weight: 600; color: rgb(15 23 42); }
+.dark .prose-reader strong { color: rgb(248 250 252); }
+.prose-reader em { font-style: italic; }
+.prose-reader ul, .prose-reader ol {
+  margin: 1.1rem 0;
+  padding-left: 1.5rem;
+}
+.prose-reader ul { list-style: disc; }
+.prose-reader ol { list-style: decimal; }
+.prose-reader li { margin: 0.4rem 0; }
+.prose-reader blockquote {
+  margin: 1.75rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 3px solid rgb(30 58 138);
+  font-style: italic;
+  color: rgb(71 85 105);
+}
+.dark .prose-reader blockquote {
+  border-left-color: rgb(96 165 250);
+  color: rgb(148 163 184);
+}
+.prose-reader code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: rgb(241 245 249);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+}
+.dark .prose-reader code { background: rgb(30 41 59); }
+.prose-reader hr {
+  margin: 2.5rem 0;
+  border: none;
+  border-top: 1px solid rgb(226 232 240);
+}
+.dark .prose-reader hr { border-top-color: rgb(30 41 59); }
