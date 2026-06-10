@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
 import { courses as defaultCourses } from "@/data/mockData";
 
+export interface QuizQuestion {
+  id: string;
+  questionText: string;
+  options: string[];
+  correctOptionIndex: number;
+  explanation: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
   content: string;
+  teacherPlan?: string;
+  quiz?: QuizQuestion[];
 }
 
 export interface Module {
@@ -40,6 +50,59 @@ const listeners = new Set<() => void>();
 
 const isClient = typeof window !== "undefined";
 
+const seedInitialData = () => {
+  const seeded = [...defaultCourses];
+  // Seed the first lesson of the hermeneutica-1 course with a teacher plan and a quiz
+  const hermeneuticaCourse = seeded.find(c => c.id === "curso-hermeneutica-1");
+  if (hermeneuticaCourse && hermeneuticaCourse.modules[0] && hermeneuticaCourse.modules[0].lessons[0]) {
+    hermeneuticaCourse.modules[0].lessons[0].teacherPlan = `# Guia do Professor: Introdução à Hermenêutica
+    
+> "O objetivo deste roteiro é ajudar a liderar a classe através de um debate prático sobre a interpretação bíblica."
+
+## Objetivos da Aula
+1. Compreender a diferença entre tradução, interpretação e aplicação.
+2. Identificar os três grandes abismos (histórico, cultural e linguístico) na leitura da Bíblia.
+3. Estimular a leitura atenta a fim de evitar a *eisegese* (colocar ideias próprias no texto).
+
+## Dinâmica Quebra-Gelo: "O Jogo das Traduções" (10 minutos)
+*   Selecione três alunos e peça para eles reescreverem uma mensagem simples em outros estilos (gírias de internet, linguagem formal antiga e estilo jornalístico).
+*   Peça para lerem em voz alta e mostre como a mudança de estilo linguístico altera a percepção do conteúdo. Introduza com isso o **abismo linguístico** e a importância da hermenêutica.
+
+## Roteiro de Perguntas para Discussão em Classe
+1. **Discussão:** Se toda leitura já é um processo de tradução mental, como podemos manter a humildade e a objetividade ao ler passagens bíblicas difíceis?
+2. **Exemplo Prático:** Discuta a passagem de *Mateus 19:24* ("É mais fácil um camelo passar pelo fundo de uma agulha..."). Como a pesquisa histórica sobre os costumes da época e possíveis portões de Jerusalém ajudam a compreender esta figura de linguagem?
+`;
+
+    hermeneuticaCourse.modules[0].lessons[0].quiz = [
+      {
+        id: "q-1",
+        questionText: "O que significa o termo hermenêutica, de origem grega?",
+        options: [
+          "Apenas a cópia manual de documentos sagrados.",
+          "A ciência e arte de interpretar as Escrituras.",
+          "O estudo da história geográfica de Israel.",
+          "A pregação pública e exortação."
+        ],
+        correctOptionIndex: 1,
+        explanation: "Hermenêutica deriva do grego 'hermeneuein', que se refere a interpretar, explicar ou traduzir. É uma ciência por ter regras claras e uma arte por requerer sensibilidade literária e espiritual."
+      },
+      {
+        id: "q-2",
+        questionText: "Quais são os três grandes abismos que a hermenêutica nos ajuda a superar?",
+        options: [
+          "Doutrinário, Denominacional e Político.",
+          "Histórico, Cultural e Linguístico.",
+          "Linguístico, Filosófico e Geográfico.",
+          "Social, Psicológico e Acadêmico."
+        ],
+        correctOptionIndex: 1,
+        explanation: "Os três abismos básicos são o Histórico (tempo de distância), Cultural (diferenças de costumes de civilizações antigas) e Linguístico (hebraico/aramaico/grego antigos em comparação aos idiomas modernos)."
+      }
+    ];
+  }
+  return seeded;
+};
+
 // Inicializar estado a partir do localStorage ou mockData
 if (isClient) {
   try {
@@ -47,12 +110,13 @@ if (isClient) {
     if (savedCourses) {
       globalCourses = JSON.parse(savedCourses);
     } else {
-      globalCourses = defaultCourses;
+      globalCourses = seedInitialData();
       localStorage.setItem("ebd_courses", JSON.stringify(globalCourses));
     }
   } catch (e) {
-    globalCourses = defaultCourses;
+    globalCourses = seedInitialData();
   }
+
 
   try {
     const savedCategories = localStorage.getItem("ebd_categories");
@@ -185,11 +249,20 @@ export function useCourseStore() {
   };
 
   // Operações de Lição
-  const addLesson = (courseId: string, moduleId: string, title: string, content: string) => {
+  const addLesson = (
+    courseId: string,
+    moduleId: string,
+    title: string,
+    content: string,
+    teacherPlan?: string,
+    quiz?: QuizQuestion[]
+  ) => {
     const newLesson: Lesson = {
       id: "lesson-" + Math.random().toString(36).substring(2, 9),
       title,
-      content
+      content,
+      teacherPlan,
+      quiz
     };
     globalCourses = globalCourses.map((c) => {
       if (c.id === courseId) {

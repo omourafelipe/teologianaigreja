@@ -20,9 +20,11 @@ import {
   Quote,
   Code,
   Link2,
-  List as ListIcon
+  List as ListIcon,
+  HelpCircle,
+  Tag
 } from "lucide-react";
-import { useCourseStore } from "@/hooks/useCourseStore";
+import { useCourseStore, QuizQuestion } from "@/hooks/useCourseStore";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 export const Route = createFileRoute("/teacher/courses/$courseId")({
@@ -61,7 +63,18 @@ function CourseEditorPage() {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null); // null se for nova lição
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonContent, setLessonContent] = useState("");
+  const [lessonTeacherPlan, setLessonTeacherPlan] = useState("");
+  const [lessonQuiz, setLessonQuiz] = useState<QuizQuestion[]>([]);
+  
+  const [activeEditorTab, setActiveEditorTab] = useState<"content" | "teacherPlan" | "quiz">("content");
   const [editorMode, setEditorMode] = useState<"edit" | "preview" | "split">("split");
+
+  // Estados do Criador de Questões de Quiz
+  const [quizQuestionText, setQuizQuestionText] = useState("");
+  const [quizOptions, setQuizOptions] = useState(["", "", "", ""]);
+  const [quizCorrectIndex, setQuizCorrectIndex] = useState(0);
+  const [quizExplanation, setQuizExplanation] = useState("");
+  const [editingQuizQuestionId, setEditingQuizQuestionId] = useState<string | null>(null);
 
   if (!course) {
     return (
@@ -110,14 +123,27 @@ function CourseEditorPage() {
     setActiveLessonId(null);
     setLessonTitle("");
     setLessonContent("");
+    setLessonTeacherPlan("");
+    setLessonQuiz([]);
+    setActiveEditorTab("content");
     setIsEditingLesson(true);
   };
 
-  const handleOpenEditLessonEditor = (moduleId: string, lessonId: string, title: string, content: string) => {
+  const handleOpenEditLessonEditor = (
+    moduleId: string,
+    lessonId: string,
+    title: string,
+    content: string,
+    teacherPlan?: string,
+    quizData?: QuizQuestion[]
+  ) => {
     setActiveModuleId(moduleId);
     setActiveLessonId(lessonId);
     setLessonTitle(title);
     setLessonContent(content);
+    setLessonTeacherPlan(teacherPlan || "");
+    setLessonQuiz(quizData || []);
+    setActiveEditorTab("content");
     setIsEditingLesson(true);
   };
 
@@ -129,12 +155,21 @@ function CourseEditorPage() {
 
     if (activeLessonId === null) {
       // Nova lição
-      addLesson(course.id, activeModuleId, lessonTitle.trim(), lessonContent);
+      addLesson(
+        course.id,
+        activeModuleId,
+        lessonTitle.trim(),
+        lessonContent,
+        lessonTeacherPlan,
+        lessonQuiz
+      );
     } else {
       // Editar lição
       updateLesson(course.id, activeModuleId, activeLessonId, {
         title: lessonTitle.trim(),
         content: lessonContent,
+        teacherPlan: lessonTeacherPlan,
+        quiz: lessonQuiz
       });
     }
 
@@ -148,9 +183,62 @@ function CourseEditorPage() {
     }
   };
 
+  // Lógica do Criador de Questões de Quiz
+  const handleSaveQuizQuestion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quizQuestionText.trim()) return;
+    if (quizOptions.some(opt => !opt.trim())) {
+      alert("Por favor, preencha todas as 4 alternativas.");
+      return;
+    }
+
+    if (editingQuizQuestionId === null) {
+      // Adicionar nova questão
+      const newQuestion: QuizQuestion = {
+        id: "q-" + Math.random().toString(36).substring(2, 9),
+        questionText: quizQuestionText.trim(),
+        options: quizOptions.map(o => o.trim()),
+        correctOptionIndex: quizCorrectIndex,
+        explanation: quizExplanation.trim()
+      };
+      setLessonQuiz(prev => [...prev, newQuestion]);
+    } else {
+      // Atualizar questão existente
+      setLessonQuiz(prev => prev.map(q => 
+        q.id === editingQuizQuestionId ? {
+          ...q,
+          questionText: quizQuestionText.trim(),
+          options: quizOptions.map(o => o.trim()),
+          correctOptionIndex: quizCorrectIndex,
+          explanation: quizExplanation.trim()
+        } : q
+      ));
+      setEditingQuizQuestionId(null);
+    }
+
+    // Limpar campos
+    setQuizQuestionText("");
+    setQuizOptions(["", "", "", ""]);
+    setQuizCorrectIndex(0);
+    setQuizExplanation("");
+  };
+
+  const handleEditQuizQuestion = (question: QuizQuestion) => {
+    setEditingQuizQuestionId(question.id);
+    setQuizQuestionText(question.questionText);
+    setQuizOptions([...question.options]);
+    setQuizCorrectIndex(question.correctOptionIndex);
+    setQuizExplanation(question.explanation);
+  };
+
+  const handleDeleteQuizQuestion = (id: string) => {
+    setLessonQuiz(prev => prev.filter(q => q.id !== id));
+  };
+
   // Barra de ferramentas Markdown
   const insertMarkdown = (syntax: string) => {
-    const textarea = document.getElementById("lesson-textarea") as HTMLTextAreaElement;
+    const textareaId = activeEditorTab === "content" ? "lesson-textarea" : "teacher-plan-textarea";
+    const textarea = document.getElementById(textareaId) as HTMLTextAreaElement;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -169,7 +257,12 @@ function CourseEditorPage() {
     else if (syntax === "list") replacement = `\n- Item 1\n- Item 2\n`;
 
     const newContent = text.substring(0, start) + replacement + text.substring(end);
-    setLessonContent(newContent);
+    
+    if (activeEditorTab === "content") {
+      setLessonContent(newContent);
+    } else {
+      setLessonTeacherPlan(newContent);
+    }
     
     setTimeout(() => {
       textarea.focus();
@@ -201,39 +294,41 @@ function CourseEditorPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* View Mode Toggles */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
-              <button
-                onClick={() => setEditorMode("edit")}
-                className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
-                  editorMode === "edit"
-                    ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
-                }`}
-              >
-                <FileText className="inline h-3.5 w-3.5 mr-1" /> Editar
-              </button>
-              <button
-                onClick={() => setEditorMode("preview")}
-                className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
-                  editorMode === "preview"
-                    ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
-                }`}
-              >
-                <Eye className="inline h-3.5 w-3.5 mr-1" /> Visualizar
-              </button>
-              <button
-                onClick={() => setEditorMode("split")}
-                className={`hidden md:block rounded px-2.5 py-1 text-[11px] font-semibold transition ${
-                  editorMode === "split"
-                    ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
-                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
-                }`}
-              >
-                <Columns className="inline h-3.5 w-3.5 mr-1" /> Lado a Lado
-              </button>
-            </div>
+            {/* View Mode Toggles (only for textareas) */}
+            {activeEditorTab !== "quiz" && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+                <button
+                  onClick={() => setEditorMode("edit")}
+                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    editorMode === "edit"
+                      ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
+                  }`}
+                >
+                  <FileText className="inline h-3.5 w-3.5 mr-1" /> Editar
+                </button>
+                <button
+                  onClick={() => setEditorMode("preview")}
+                  className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    editorMode === "preview"
+                      ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
+                  }`}
+                >
+                  <Eye className="inline h-3.5 w-3.5 mr-1" /> Visualizar
+                </button>
+                <button
+                  onClick={() => setEditorMode("split")}
+                  className={`hidden md:block rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    editorMode === "split"
+                      ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-250"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-350"
+                  }`}
+                >
+                  <Columns className="inline h-3.5 w-3.5 mr-1" /> Lado a Lado
+                </button>
+              </div>
+            )}
 
             <button
               onClick={handleSaveLesson}
@@ -255,42 +350,277 @@ function CourseEditorPage() {
           />
         </div>
 
-        {/* Markdown Editor Toolbar */}
-        <div className="flex flex-wrap gap-1 border-b border-slate-200/60 py-2 dark:border-slate-800/60">
-          <button onClick={() => insertMarkdown("bold")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Negrito"><Bold className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("italic")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Itálico"><Italic className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("h2")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Subtítulo H2"><Heading2 className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("h3")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Subtítulo H3"><Heading3 className="h-4 w-4" /></button>
-          <div className="w-[1px] bg-slate-200 dark:bg-slate-800 mx-1 my-1.5"></div>
-          <button onClick={() => insertMarkdown("quote")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Citação"><Quote className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("code")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Código"><Code className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("link")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Link"><Link2 className="h-4 w-4" /></button>
-          <button onClick={() => insertMarkdown("list")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Lista"><ListIcon className="h-4 w-4" /></button>
+        {/* Abas do Editor de Conteúdo */}
+        <div className="flex border-b border-slate-200/60 dark:border-slate-800/60 mt-4">
+          <button
+            onClick={() => setActiveEditorTab("content")}
+            className={`border-b-2 px-4 py-2 text-xs font-semibold transition-all ${
+              activeEditorTab === "content"
+                ? "border-blue-900 text-blue-900 dark:border-blue-400 dark:text-blue-400"
+                : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+          >
+            Artigo de Leitura
+          </button>
+          <button
+            onClick={() => setActiveEditorTab("teacherPlan")}
+            className={`border-b-2 px-4 py-2 text-xs font-semibold transition-all ${
+              activeEditorTab === "teacherPlan"
+                ? "border-blue-900 text-blue-900 dark:border-blue-400 dark:text-blue-400"
+                : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+          >
+            Guia do Professor (Esboço)
+          </button>
+          <button
+            onClick={() => setActiveEditorTab("quiz")}
+            className={`border-b-2 px-4 py-2 text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              activeEditorTab === "quiz"
+                ? "border-blue-900 text-blue-900 dark:border-blue-400 dark:text-blue-400"
+                : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+          >
+            Exercícios (Quiz)
+            {lessonQuiz.length > 0 && (
+              <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-900 dark:bg-blue-950/40 dark:text-blue-400">
+                {lessonQuiz.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        {/* Editor Content Area */}
-        <div className="flex-1 mt-4 grid gap-6 h-full overflow-hidden" style={{
-          gridTemplateColumns: editorMode === "split" ? "1fr 1fr" : "1fr"
-        }}>
-          {/* Editor Column */}
-          {(editorMode === "edit" || editorMode === "split") && (
-            <textarea
-              id="lesson-textarea"
-              value={lessonContent}
-              onChange={(e) => setLessonContent(e.target.value)}
-              placeholder="Escreva a sua lição em Markdown. Use títulos (## e ###) para gerar o sumário na lateral automaticamente..."
-              className="h-full min-h-[300px] w-full resize-none rounded-lg border border-slate-200 bg-white p-4 text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-900/10 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200 dark:focus:ring-blue-400/10"
-            />
+        {/* Toolbar (Only for Markdown Tabs) */}
+        {activeEditorTab !== "quiz" && (
+          <div className="flex flex-wrap gap-1 border-b border-slate-200/60 py-2 dark:border-slate-800/60">
+            <button onClick={() => insertMarkdown("bold")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Negrito"><Bold className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("italic")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Itálico"><Italic className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("h2")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Subtítulo H2"><Heading2 className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("h3")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Subtítulo H3"><Heading3 className="h-4 w-4" /></button>
+            <div className="w-[1px] bg-slate-200 dark:bg-slate-800 mx-1 my-1.5"></div>
+            <button onClick={() => insertMarkdown("quote")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Citação"><Quote className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("code")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Código"><Code className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("link")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Link"><Link2 className="h-4 w-4" /></button>
+            <button onClick={() => insertMarkdown("list")} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded" title="Lista"><ListIcon className="h-4 w-4" /></button>
+          </div>
+        )}
+
+        {/* EDITOR TABS CONTENTS */}
+        <div className="flex-1 mt-4 overflow-y-auto h-full pr-2">
+          {/* TAB 1: Artigo de Leitura */}
+          {activeEditorTab === "content" && (
+            <div className="grid gap-6 h-full min-h-[350px]" style={{
+              gridTemplateColumns: editorMode === "split" ? "1fr 1fr" : "1fr"
+            }}>
+              {(editorMode === "edit" || editorMode === "split") && (
+                <textarea
+                  id="lesson-textarea"
+                  value={lessonContent}
+                  onChange={(e) => setLessonContent(e.target.value)}
+                  placeholder="Escreva o artigo de leitura da lição em Markdown..."
+                  className="h-full min-h-[300px] w-full resize-none rounded-lg border border-slate-200 bg-white p-4 text-sm font-mono text-slate-850 focus:outline-none dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200"
+                />
+              )}
+              {(editorMode === "preview" || editorMode === "split") && (
+                <div className="h-full min-h-[300px] overflow-y-auto rounded-lg border border-slate-250 bg-slate-50/40 p-5 dark:border-slate-850 dark:bg-slate-900/10">
+                  <span className="block text-[9px] uppercase tracking-wider font-semibold text-slate-400 mb-2">Artigo - Visualização</span>
+                  <div className="bg-white p-6 rounded-lg border border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <MarkdownRenderer content={lessonContent || "*Escreva no editor para visualizar...*"} />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Preview Column */}
-          {(editorMode === "preview" || editorMode === "split") && (
-            <div className="h-full min-h-[300px] overflow-y-auto rounded-lg border border-slate-250 bg-slate-50/40 p-5 dark:border-slate-800 dark:bg-slate-900/10">
-              <span className="block text-[9px] uppercase tracking-wider font-semibold text-slate-400 mb-2">
-                Pré-visualização em Tempo Real
-              </span>
-              <div className="bg-white p-6 rounded-lg border border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                <MarkdownRenderer content={lessonContent || "*Escreva algo no editor para ver a visualização prévia...*"} />
+          {/* TAB 2: Guia do Professor */}
+          {activeEditorTab === "teacherPlan" && (
+            <div className="grid gap-6 h-full min-h-[350px]" style={{
+              gridTemplateColumns: editorMode === "split" ? "1fr 1fr" : "1fr"
+            }}>
+              {(editorMode === "edit" || editorMode === "split") && (
+                <textarea
+                  id="teacher-plan-textarea"
+                  value={lessonTeacherPlan}
+                  onChange={(e) => setLessonTeacherPlan(e.target.value)}
+                  placeholder="Escreva orientações para líderes, dinâmicas e roteiro de debate para a aula dominical..."
+                  className="h-full min-h-[300px] w-full resize-none rounded-lg border border-slate-200 bg-white p-4 text-sm font-mono text-slate-850 focus:outline-none dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200"
+                />
+              )}
+              {(editorMode === "preview" || editorMode === "split") && (
+                <div className="h-full min-h-[300px] overflow-y-auto rounded-lg border border-slate-250 bg-slate-50/40 p-5 dark:border-slate-850 dark:bg-slate-900/10">
+                  <span className="block text-[9px] uppercase tracking-wider font-semibold text-slate-400 mb-2">Guia do Professor - Visualização</span>
+                  <div className="bg-white p-6 rounded-lg border border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <MarkdownRenderer content={lessonTeacherPlan || "*Escreva as orientações pedagógicas para visualizar...*"} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: Quiz Builder */}
+          {activeEditorTab === "quiz" && (
+            <div className="grid gap-6 lg:grid-cols-5 animate-fade-in pb-10">
+              {/* Question Editor Form */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/40 lg:col-span-2 space-y-4">
+                <h3 className="font-serif text-sm font-bold text-slate-800 dark:text-slate-250">
+                  {editingQuizQuestionId === null ? "Adicionar Questão" : "Editar Questão"}
+                </h3>
+                <form onSubmit={handleSaveQuizQuestion} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-450">
+                      Enunciado da Pergunta *
+                    </label>
+                    <input
+                      type="text"
+                      value={quizQuestionText}
+                      onChange={(e) => setQuizQuestionText(e.target.value)}
+                      placeholder="Ex: Qual foi o abismo analisado nesta lição?"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-blue-900 focus:outline-none dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-450 block">
+                      Alternativas (Selecione a correta) *
+                    </label>
+                    <div className="space-y-2">
+                      {quizOptions.map((opt, oIdx) => (
+                        <div key={oIdx} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="correct-option"
+                            checked={quizCorrectIndex === oIdx}
+                            onChange={() => setQuizCorrectIndex(oIdx)}
+                            className="h-3.5 w-3.5 text-blue-900 focus:ring-blue-900/20 dark:text-blue-400 dark:focus:ring-blue-400/20"
+                          />
+                          <input
+                            type="text"
+                            value={opt}
+                            onChange={(e) => {
+                              const newOpts = [...quizOptions];
+                              newOpts[oIdx] = e.target.value;
+                              setQuizOptions(newOpts);
+                            }}
+                            placeholder={`Alternativa ${String.fromCharCode(65 + oIdx)}`}
+                            className="flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-800 focus:border-blue-900 focus:outline-none dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-250"
+                            required
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-450">
+                      Gabarito Comentado (Explicação)
+                    </label>
+                    <textarea
+                      value={quizExplanation}
+                      onChange={(e) => setQuizExplanation(e.target.value)}
+                      placeholder="Explique porque a resposta selecionada é a correta..."
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-blue-900 focus:outline-none dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-200"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 justify-end">
+                    {editingQuizQuestionId !== null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingQuizQuestionId(null);
+                          setQuizQuestionText("");
+                          setQuizOptions(["", "", "", ""]);
+                          setQuizCorrectIndex(0);
+                          setQuizExplanation("");
+                        }}
+                        className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-350"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="rounded-lg bg-blue-900 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-800 dark:bg-blue-400 dark:text-slate-900 transition"
+                    >
+                      {editingQuizQuestionId === null ? "Adicionar Questão" : "Salvar Alterações"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Questions List */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/40 lg:col-span-3">
+                <h3 className="mb-4 font-serif text-sm font-bold text-slate-800 dark:text-slate-250">
+                  Questões Adicionadas ({lessonQuiz.length})
+                </h3>
+
+                {lessonQuiz.length === 0 ? (
+                  <div className="flex h-48 items-center justify-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-lg dark:border-slate-800">
+                    Nenhuma questão cadastrada para esta lição.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {lessonQuiz.map((q, idx) => (
+                      <div
+                        key={q.id}
+                        className="rounded-lg border border-slate-100 p-4 dark:border-slate-850 dark:bg-slate-950/20 space-y-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+                            {idx + 1}. {q.questionText}
+                          </h4>
+                          <div className="flex gap-1 shrink-0">
+                            <button
+                              onClick={() => handleEditQuizQuestion(q)}
+                              className="rounded p-1 text-slate-400 hover:text-slate-650 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-900"
+                              title="Editar Questão"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteQuizQuestion(q.id)}
+                              className="rounded p-1 text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:text-red-650 dark:hover:bg-slate-900"
+                              title="Excluir Questão"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Options */}
+                        <div className="grid gap-2 sm:grid-cols-2 text-[11px]">
+                          {q.options.map((opt, oIdx) => {
+                            const isCorrect = q.correctOptionIndex === oIdx;
+                            return (
+                              <div
+                                key={oIdx}
+                                className={`rounded p-2 border ${
+                                  isCorrect
+                                    ? "border-emerald-300 bg-emerald-50/20 text-emerald-800 dark:border-emerald-900/30 dark:bg-emerald-950/25 dark:text-emerald-400"
+                                    : "border-slate-100 text-slate-500 dark:border-slate-850 dark:text-slate-400"
+                                }`}
+                              >
+                                <span className="font-semibold block text-[9px] uppercase">
+                                  Opção {String.fromCharCode(65 + oIdx)} {isCorrect && " (CORRETA)"}
+                                </span>
+                                <span className="mt-0.5 block">{opt}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Explanation */}
+                        {q.explanation && (
+                          <div className="bg-slate-50 p-2.5 rounded border border-slate-100 text-[10px] leading-relaxed text-slate-600 dark:bg-slate-950/20 dark:border-slate-850 dark:text-slate-450">
+                            <span className="font-semibold block mb-0.5 text-slate-400">Comentário do Gabarito:</span>
+                            {q.explanation}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -348,7 +678,7 @@ function CourseEditorPage() {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsEditingMeta(false)}
-                className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-350"
+                className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-355"
               >
                 Cancelar
               </button>
@@ -424,7 +754,7 @@ function CourseEditorPage() {
               <button
                 type="button"
                 onClick={() => setIsAddingModule(false)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-650 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-350"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-655 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-350"
               >
                 Cancelar
               </button>
@@ -479,7 +809,7 @@ function CourseEditorPage() {
                         </span>
                         <button
                           onClick={() => handleStartEditModule(mod.id, mod.title)}
-                          className="rounded p-1 text-slate-400 hover:text-slate-650 hover:bg-slate-200 dark:hover:text-slate-350 dark:hover:bg-slate-800/80"
+                          className="rounded p-1 text-slate-400 hover:text-slate-655 hover:bg-slate-200 dark:hover:text-slate-350 dark:hover:bg-slate-800/80"
                         >
                           <Edit className="h-3 w-3" />
                         </button>
@@ -518,7 +848,7 @@ function CourseEditorPage() {
                       mod.lessons.map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center justify-between rounded-lg border border-slate-100 bg-white p-3 hover:border-slate-200 transition dark:border-slate-850 dark:bg-slate-950/10 dark:hover:border-slate-800"
+                          className="flex items-center justify-between rounded-lg border border-slate-100 bg-white p-3 hover:border-slate-200 transition dark:border-slate-855 dark:bg-slate-955/10 dark:hover:border-slate-800"
                         >
                           <div className="flex items-center gap-2.5">
                             <BookOpen className="h-4 w-4 text-slate-400" />
@@ -526,16 +856,22 @@ function CourseEditorPage() {
                               <h5 className="text-xs font-semibold text-slate-850 dark:text-slate-250">
                                 {lesson.title}
                               </h5>
-                              <span className="block text-[9px] text-slate-400">
-                                {lesson.content.length} caracteres
-                              </span>
+                              <div className="flex items-center gap-2 mt-0.5 text-[9px] text-slate-400">
+                                <span>{lesson.content.length} carac.</span>
+                                {lesson.teacherPlan && (
+                                  <span className="rounded bg-amber-50 px-1 py-0.2 text-[8px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 font-medium">Guia do Prof.</span>
+                                )}
+                                {lesson.quiz && lesson.quiz.length > 0 && (
+                                  <span className="rounded bg-emerald-50 px-1 py-0.2 text-[8px] text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-medium">{lesson.quiz.length} Questões</span>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() =>
-                                handleOpenEditLessonEditor(mod.id, lesson.id, lesson.title, lesson.content)
+                                handleOpenEditLessonEditor(mod.id, lesson.id, lesson.title, lesson.content, lesson.teacherPlan, lesson.quiz)
                               }
                               className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-750 dark:hover:bg-slate-900 dark:hover:text-slate-200"
                               title="Editar Lição"
@@ -544,7 +880,7 @@ function CourseEditorPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteLesson(mod.id, lesson.id, lesson.title)}
-                              className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-650 dark:hover:bg-red-950/20"
+                              className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-655 dark:hover:bg-red-950/20"
                               title="Excluir Lição"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
