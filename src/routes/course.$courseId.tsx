@@ -1,47 +1,39 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { CourseAccordion } from "@/components/CourseAccordion";
-import { findCourse, getFlatLessons } from "@/data/mockData";
+import { useCourseStore } from "@/hooks/useCourseStore";
 
 export const Route = createFileRoute("/course/$courseId")({
-  loader: ({ params }) => {
-    const course = findCourse(params.courseId);
-    if (!course) throw notFound();
-    return { course };
+  head: ({ params }) => {
+    // Return metadata
+    return {
+      meta: [
+        { title: `Curso — EBD Digital` },
+      ],
+    };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.course.title} — EBD Digital` },
-          { name: "description", content: loaderData.course.description },
-          { property: "og:title", content: loaderData.course.title },
-          { property: "og:description", content: loaderData.course.description },
-        ]
-      : [],
-  }),
   component: CoursePage,
-  notFoundComponent: () => (
-    <Layout>
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-        <h1 className="font-serif text-2xl">Curso não encontrado</h1>
-        <Link to="/" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
-          ← Voltar à biblioteca
-        </Link>
-      </div>
-    </Layout>
-  ),
-  errorComponent: () => (
-    <Layout>
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center text-sm text-slate-500">
-        Não foi possível carregar este curso.
-      </div>
-    </Layout>
-  ),
 });
 
 function CoursePage() {
-  const { course } = Route.useLoaderData();
+  const { courseId } = Route.useParams();
+  const { getCourse, getFlatLessons } = useCourseStore();
+  const course = getCourse(courseId);
+
+  if (!course) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+          <h1 className="font-serif text-2xl">Curso não encontrado</h1>
+          <Link to="/" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
+            ← Voltar à biblioteca
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
   const flat = getFlatLessons(course);
   const first = flat[0];
   return (
@@ -81,3 +73,4 @@ function CoursePage() {
     </Layout>
   );
 }
+

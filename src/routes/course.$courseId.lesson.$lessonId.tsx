@@ -1,43 +1,18 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, List, ChevronDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Layout } from "@/components/Layout";
 import { MarkdownRenderer, slugify } from "@/components/MarkdownRenderer";
 import { SidebarDrawer } from "@/components/SidebarDrawer";
-import { findLesson } from "@/data/mockData";
+import { useCourseStore } from "@/hooks/useCourseStore";
 
 export const Route = createFileRoute("/course/$courseId/lesson/$lessonId")({
-  loader: ({ params }) => {
-    const data = findLesson(params.courseId, params.lessonId);
-    if (!data) throw notFound();
-    return data;
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.entry.lesson.title} — ${loaderData.course.title}` },
-          { name: "description", content: `${loaderData.entry.moduleTitle} · ${loaderData.course.title}` },
-        ]
-      : [],
+  head: () => ({
+    meta: [
+      { title: "Leitura — EBD Digital" }
+    ],
   }),
   component: LessonPage,
-  notFoundComponent: () => (
-    <Layout>
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-        <h1 className="font-serif text-2xl">Lição não encontrada</h1>
-        <Link to="/" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
-          ← Voltar à biblioteca
-        </Link>
-      </div>
-    </Layout>
-  ),
-  errorComponent: () => (
-    <Layout>
-      <div className="mx-auto max-w-3xl px-6 py-20 text-center text-sm text-slate-500">
-        Não foi possível carregar esta lição.
-      </div>
-    </Layout>
-  ),
 });
 
 interface HeadingItem {
@@ -70,7 +45,25 @@ function extractHeadings(markdown: string): HeadingItem[] {
 }
 
 function LessonPage() {
-  const { course, entry, prev, next } = Route.useLoaderData();
+  const { courseId, lessonId } = Route.useParams();
+  const { findLesson } = useCourseStore();
+  
+  const data = findLesson(courseId, lessonId);
+
+  if (!data) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+          <h1 className="font-serif text-2xl">Lição não encontrada</h1>
+          <Link to="/" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
+            ← Voltar à biblioteca
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  const { course, entry, prev, next } = data;
   const [open, setOpen] = useState(false);
   const [tocExpanded, setTocExpanded] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string>("");
