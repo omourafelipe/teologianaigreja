@@ -9,6 +9,24 @@ import {
   Progress,
   QuizAnswer
 } from "@/types/database.types";
+import {
+  getFullDatabaseData,
+  addCategoryServer,
+  updateCategoryServer,
+  deleteCategoryServer,
+  addCourseServer,
+  updateCourseServer,
+  deleteCourseServer,
+  addModuleServer,
+  updateModuleServer,
+  deleteModuleServer,
+  addLessonServer,
+  updateLessonServer,
+  deleteLessonServer,
+  addQuizServer,
+  updateQuizServer,
+  deleteQuizServer
+} from "@/lib/api/db.server";
 
 // Tabelas globais em memória
 let globalProfiles: Profile[] = [];
@@ -144,7 +162,21 @@ Refere-se ao mundo do autor e dos leitores originais:
   return { seededProfiles, seededCategories, seededCourses, seededModules, seededLessons, seededQuizzes };
 };
 
-// Carregar tabelas do localStorage
+const loadDataFromServer = async () => {
+  try {
+    const data = await getFullDatabaseData();
+    globalCourses = data.courses;
+    globalCategories = data.categories;
+    globalModules = data.modules;
+    globalLessons = data.lessons;
+    globalQuizzes = data.quizzes;
+    sync();
+  } catch (e) {
+    console.error("Falha ao carregar banco de dados do servidor:", e);
+  }
+};
+
+// Carregar tabelas do localStorage (Profiles e Progresso) & cache de conteúdo
 if (isClient) {
   try {
     const savedProfiles = localStorage.getItem("lms_db_profiles");
@@ -157,39 +189,32 @@ if (isClient) {
     const savedQuizAnswers = localStorage.getItem("lms_db_quiz_answers");
     const savedUser = localStorage.getItem("lms_auth_user");
 
-    if (savedProfiles && savedCourses) {
+    // Perfis padrão
+    if (savedProfiles) {
       globalProfiles = JSON.parse(savedProfiles);
+    } else {
+      globalProfiles = [
+        { id: "prof-123", role: "teacher", name: "Professor EBD", email: "professor@ebd.com" },
+        { id: "stud-123", role: "student", name: "Aluno EBD", email: "aluno@ebd.com" }
+      ];
+      localStorage.setItem("lms_db_profiles", JSON.stringify(globalProfiles));
+    }
+
+    // Carregar cache local de conteúdos para carregamento instantâneo (SWR)
+    if (savedCourses) {
       globalCategories = JSON.parse(savedCategories || "[]");
       globalCourses = JSON.parse(savedCourses);
       globalModules = JSON.parse(savedModules || "[]");
       globalLessons = JSON.parse(savedLessons || "[]");
       globalQuizzes = JSON.parse(savedQuizzes || "[]");
-      globalProgress = JSON.parse(savedProgress || "[]");
-      globalQuizAnswers = JSON.parse(savedQuizAnswers || "[]");
-    } else {
-      const seeds = runDatabaseSeeding();
-      globalProfiles = seeds.seededProfiles;
-      globalCategories = seeds.seededCategories;
-      globalCourses = seeds.seededCourses;
-      globalModules = seeds.seededModules;
-      globalLessons = seeds.seededLessons;
-      globalQuizzes = seeds.seededQuizzes;
-      globalProgress = [];
-      globalQuizAnswers = [];
-
-      localStorage.setItem("lms_db_profiles", JSON.stringify(globalProfiles));
-      localStorage.setItem("lms_db_categories", JSON.stringify(globalCategories));
-      localStorage.setItem("lms_db_courses", JSON.stringify(globalCourses));
-      localStorage.setItem("lms_db_modules", JSON.stringify(globalModules));
-      localStorage.setItem("lms_db_lessons", JSON.stringify(globalLessons));
-      localStorage.setItem("lms_db_quizzes", JSON.stringify(globalQuizzes));
-      localStorage.setItem("lms_db_progress", JSON.stringify(globalProgress));
-      localStorage.setItem("lms_db_quiz_answers", JSON.stringify(globalQuizAnswers));
     }
 
-    if (savedUser) {
-      globalCurrentUser = JSON.parse(savedUser);
-    }
+    if (savedProgress) globalProgress = JSON.parse(savedProgress);
+    if (savedQuizAnswers) globalQuizAnswers = JSON.parse(savedQuizAnswers);
+    if (savedUser) globalCurrentUser = JSON.parse(savedUser);
+
+    // Carregar dados frescos do banco de dados no servidor
+    loadDataFromServer();
   } catch (e) {
     console.error("Falha ao inicializar o banco LMS mock", e);
   }
@@ -265,13 +290,13 @@ export function useLmsStore() {
   const getCategories = () => globalCategories;
 
   const addCategory = (name: string, description?: string) => {
-    const newCat: Category = {
-      id: "cat-" + Math.random().toString(36).substring(2, 9),
-      name,
-      description
-    };
+    const id = "cat-" + Math.random().toString(36).substring(2, 9);
+    const newCat: Category = { id, name, description };
     globalCategories = [...globalCategories, newCat];
     sync();
+    addCategoryServer({ id, name, description }).catch((e) =>
+      console.error("Erro no addCategoryServer:", e)
+    );
     return newCat;
   };
 
@@ -280,11 +305,20 @@ export function useLmsStore() {
       c.id === id ? { ...c, ...updates } : c
     );
     sync();
+    const cat = globalCategories.find((c) => c.id === id);
+    if (cat) {
+      updateCategoryServer({ id, name: cat.name, description: cat.description }).catch((e) =>
+        console.error("Erro no updateCategoryServer:", e)
+      );
+    }
   };
 
   const deleteCategory = (id: string) => {
     globalCategories = globalCategories.filter((c) => c.id !== id);
     sync();
+    deleteCategoryServer({ id }).catch((e) =>
+      console.error("Erro no deleteCategoryServer:", e)
+    );
   };
 
   // --- COURSE CRUD ---
@@ -292,15 +326,13 @@ export function useLmsStore() {
   const getCourse = (id: string) => globalCourses.find((c) => c.id === id);
 
   const addCourse = (title: string, description: string, category_id: string) => {
-    const newCourse: Course = {
-      id: "course-" + Math.random().toString(36).substring(2, 9),
-      title,
-      description,
-      category_id,
-      is_published: true
-    };
+    const id = "course-" + Math.random().toString(36).substring(2, 9);
+    const newCourse: Course = { id, title, description, category_id, is_published: true };
     globalCourses = [...globalCourses, newCourse];
     sync();
+    addCourseServer({ id, title, description, category_id }).catch((e) =>
+      console.error("Erro no addCourseServer:", e)
+    );
     return newCourse;
   };
 
@@ -309,16 +341,33 @@ export function useLmsStore() {
       c.id === id ? { ...c, ...updates } : c
     );
     sync();
+    const c = globalCourses.find((course) => course.id === id);
+    if (c) {
+      updateCourseServer({
+        id,
+        title: c.title,
+        description: c.description,
+        category_id: c.category_id,
+        is_published: c.is_published
+      }).catch((e) => console.error("Erro no updateCourseServer:", e));
+    }
   };
 
   const deleteCourse = (id: string) => {
-    globalCourses = globalCourses.filter((c) => c.id !== id);
-    // Cascade delete modules, lessons, quizzes
     const modulesToDelete = globalModules.filter((m) => m.course_id === id);
-    modulesToDelete.forEach((mod) => {
-      deleteModule(mod.id);
-    });
+    const modIds = modulesToDelete.map((m) => m.id);
+    const lessonsToDelete = globalLessons.filter((l) => modIds.includes(l.module_id));
+    const lesIds = lessonsToDelete.map((l) => l.id);
+
+    globalCourses = globalCourses.filter((c) => c.id !== id);
+    globalModules = globalModules.filter((m) => m.course_id !== id);
+    globalLessons = globalLessons.filter((l) => !modIds.includes(l.module_id));
+    globalQuizzes = globalQuizzes.filter((q) => !lesIds.includes(q.lesson_id));
     sync();
+
+    deleteCourseServer({ id }).catch((e) =>
+      console.error("Erro no deleteCourseServer:", e)
+    );
   };
 
   // --- MODULE CRUD ---
@@ -330,14 +379,13 @@ export function useLmsStore() {
 
   const addModule = (courseId: string, title: string) => {
     const siblingCount = globalModules.filter((m) => m.course_id === courseId).length;
-    const newMod: Module = {
-      id: "mod-" + Math.random().toString(36).substring(2, 9),
-      course_id: courseId,
-      title,
-      order: siblingCount + 1
-    };
+    const id = "mod-" + Math.random().toString(36).substring(2, 9);
+    const newMod: Module = { id, course_id: courseId, title, order: siblingCount + 1 };
     globalModules = [...globalModules, newMod];
     sync();
+    addModuleServer({ id, course_id: courseId, title, order: newMod.order }).catch((e) =>
+      console.error("Erro no addModuleServer:", e)
+    );
     return newMod;
   };
 
@@ -346,16 +394,23 @@ export function useLmsStore() {
       m.id === id ? { ...m, title } : m
     );
     sync();
+    updateModuleServer({ id, title }).catch((e) =>
+      console.error("Erro no updateModuleServer:", e)
+    );
   };
 
   const deleteModule = (id: string) => {
-    globalModules = globalModules.filter((m) => m.id !== id);
-    // Cascade delete lessons
     const lessonsToDelete = globalLessons.filter((l) => l.module_id === id);
-    lessonsToDelete.forEach((les) => {
-      deleteLesson(les.id);
-    });
+    const lesIds = lessonsToDelete.map((l) => l.id);
+
+    globalModules = globalModules.filter((m) => m.id !== id);
+    globalLessons = globalLessons.filter((l) => l.module_id !== id);
+    globalQuizzes = globalQuizzes.filter((q) => !lesIds.includes(q.lesson_id));
     sync();
+
+    deleteModuleServer({ id }).catch((e) =>
+      console.error("Erro no deleteModuleServer:", e)
+    );
   };
 
   // --- LESSON CRUD ---
@@ -369,15 +424,13 @@ export function useLmsStore() {
 
   const addLesson = (moduleId: string, title: string, content: string) => {
     const siblingCount = globalLessons.filter((l) => l.module_id === moduleId).length;
-    const newLesson: Lesson = {
-      id: "lesson-" + Math.random().toString(36).substring(2, 9),
-      module_id: moduleId,
-      title,
-      content,
-      order: siblingCount + 1
-    };
+    const id = "lesson-" + Math.random().toString(36).substring(2, 9);
+    const newLesson: Lesson = { id, module_id: moduleId, title, content, order: siblingCount + 1 };
     globalLessons = [...globalLessons, newLesson];
     sync();
+    addLessonServer({ id, module_id: moduleId, title, content, order: newLesson.order }).catch((e) =>
+      console.error("Erro no addLessonServer:", e)
+    );
     return newLesson;
   };
 
@@ -386,14 +439,23 @@ export function useLmsStore() {
       l.id === id ? { ...l, ...updates } : l
     );
     sync();
+    const les = globalLessons.find((l) => l.id === id);
+    if (les) {
+      updateLessonServer({ id, title: les.title, content: les.content }).catch((e) =>
+        console.error("Erro no updateLessonServer:", e)
+      );
+    }
   };
 
   const deleteLesson = (id: string) => {
     globalLessons = globalLessons.filter((l) => l.id !== id);
-    // Cascade delete quizzes and progress
     globalQuizzes = globalQuizzes.filter((q) => q.lesson_id !== id);
     globalProgress = globalProgress.filter((p) => p.lesson_id !== id);
     sync();
+
+    deleteLessonServer({ id }).catch((e) =>
+      console.error("Erro no deleteLessonServer:", e)
+    );
   };
 
   // --- QUIZ CRUD ---
@@ -402,16 +464,13 @@ export function useLmsStore() {
   };
 
   const addQuiz = (lessonId: string, question: string, options: string[], correctIndex: number, explanation?: string) => {
-    const newQuiz: Quiz = {
-      id: "quiz-" + Math.random().toString(36).substring(2, 9),
-      lesson_id: lessonId,
-      question,
-      options,
-      correct_option_index: correctIndex,
-      explanation
-    };
+    const id = "quiz-" + Math.random().toString(36).substring(2, 9);
+    const newQuiz: Quiz = { id, lesson_id: lessonId, question, options, correct_option_index: correctIndex, explanation };
     globalQuizzes = [...globalQuizzes, newQuiz];
     sync();
+    addQuizServer({ id, lesson_id: lessonId, question, options, correct_option_index: correctIndex, explanation: explanation || "" }).catch((e) =>
+      console.error("Erro no addQuizServer:", e)
+    );
     return newQuiz;
   };
 
@@ -420,12 +479,25 @@ export function useLmsStore() {
       q.id === id ? { ...q, ...updates } : q
     );
     sync();
+    const qzs = globalQuizzes.find((q) => q.id === id);
+    if (qzs) {
+      updateQuizServer({
+        id,
+        question: qzs.question,
+        options: qzs.options,
+        correct_option_index: qzs.correct_option_index,
+        explanation: qzs.explanation || ""
+      }).catch((e) => console.error("Erro no updateQuizServer:", e));
+    }
   };
 
   const deleteQuiz = (id: string) => {
     globalQuizzes = globalQuizzes.filter((q) => q.id !== id);
     globalQuizAnswers = globalQuizAnswers.filter((a) => a.quiz_id !== id);
     sync();
+    deleteQuizServer({ id }).catch((e) =>
+      console.error("Erro no deleteQuizServer:", e)
+    );
   };
 
   // --- STUDENT PROGRESS MANAGEMENT ---
