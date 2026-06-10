@@ -159,6 +159,12 @@
   line-height: 1.85;
   color: rgb(30 41 59); /* slate-800 */
 }
+.prose-reader h1,
+.prose-reader h2,
+.prose-reader h3,
+.prose-reader h4 {
+  scroll-margin-top: 6rem;
+}
 .dark .prose-reader {
   color: rgb(226 232 240); /* slate-200 */
 }
