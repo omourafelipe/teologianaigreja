@@ -25,6 +25,7 @@ import {
   MessageCircle,
   Clock,
   Compass,
+  Sparkles,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Layout } from "@/components/Layout";
