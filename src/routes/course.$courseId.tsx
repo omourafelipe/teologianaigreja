@@ -10,7 +10,14 @@ export const Route = createFileRoute("/course/$courseId")({
 
 function CoursePage() {
   const { courseId } = Route.useParams();
-  const { currentUser, getFullCourse, getCourseFlatLessons, getLessonProgress, getCourseProgressPercent, categories } = useLmsStore();
+  const {
+    currentUser,
+    getFullCourse,
+    getCourseFlatLessons,
+    getLessonProgress,
+    getCourseProgressPercent,
+    categories,
+  } = useLmsStore();
   const navigate = useNavigate();
 
   // Roteamento de proteção de sessão
@@ -27,9 +34,7 @@ function CoursePage() {
 
   useEffect(() => {
     if (course) {
-      setOpenModules(
-        Object.fromEntries(course.modules.map((m) => [m.id, true]))
-      );
+      setOpenModules(Object.fromEntries(course.modules.map((m) => [m.id, true])));
     }
   }, [course]);
 
@@ -38,7 +43,10 @@ function CoursePage() {
       <Layout>
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
           <h1 className="font-serif text-2xl">Curso não encontrado</h1>
-          <Link to="/dashboard" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
+          <Link
+            to="/dashboard"
+            className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400"
+          >
             ← Voltar à biblioteca
           </Link>
         </div>
@@ -74,7 +82,7 @@ function CoursePage() {
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Voltar à Biblioteca
         </Link>
-        
+
         <div>
           <span className="rounded bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-900 dark:bg-blue-950/40 dark:text-blue-400">
             {categoryName}
@@ -118,7 +126,7 @@ function CoursePage() {
           <h2 className="font-serif text-lg font-bold text-slate-900 dark:text-slate-100">
             Grade de Módulos e Lições
           </h2>
-          
+
           <div className="divide-y divide-slate-200/60 rounded-xl border border-slate-200 bg-white dark:divide-slate-800/80 dark:border-slate-800 dark:bg-slate-950/40 shadow-sm">
             {course.modules.map((mod) => {
               const isOpen = !!openModules[mod.id];
@@ -181,5 +189,3 @@ function CoursePage() {
     </Layout>
   );
 }
-
-

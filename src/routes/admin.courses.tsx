@@ -73,7 +73,11 @@ function AdminCoursesPage() {
   };
 
   const handleDeleteCourse = (id: string, title: string) => {
-    if (confirm(`Tem certeza que deseja excluir o curso "${title}"? Todos os módulos, lições e quizzes associados serão excluídos permanentemente.`)) {
+    if (
+      confirm(
+        `Tem certeza que deseja excluir o curso "${title}"? Todos os módulos, lições e quizzes associados serão excluídos permanentemente.`,
+      )
+    ) {
       deleteCourse(id);
     }
   };
@@ -226,7 +230,8 @@ function AdminCoursesPage() {
             ) : (
               <div className="grid gap-4">
                 {courses.map((c) => {
-                  const categoryName = categories.find((cat) => cat.id === c.category_id)?.name || "Sem Categoria";
+                  const categoryName =
+                    categories.find((cat) => cat.id === c.category_id)?.name || "Sem Categoria";
                   const isEditing = editingCourseId === c.id;
                   const courseMods = modules.filter((m) => m.course_id === c.id);
                   const modIds = courseMods.map((m) => m.id);
@@ -240,7 +245,9 @@ function AdminCoursesPage() {
                       >
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-slate-400">Título</label>
+                            <label className="text-[10px] uppercase font-bold text-slate-400">
+                              Título
+                            </label>
                             <input
                               type="text"
                               value={editCourseTitle}
@@ -249,7 +256,9 @@ function AdminCoursesPage() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-slate-400">Categoria</label>
+                            <label className="text-[10px] uppercase font-bold text-slate-400">
+                              Categoria
+                            </label>
                             <select
                               value={editCourseCategoryId}
                               onChange={(e) => setEditCourseCategoryId(e.target.value)}
@@ -264,7 +273,9 @@ function AdminCoursesPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] uppercase font-bold text-slate-400">Descrição</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-400">
+                            Descrição
+                          </label>
                           <textarea
                             value={editCourseDesc}
                             onChange={(e) => setEditCourseDesc(e.target.value)}
@@ -322,7 +333,9 @@ function AdminCoursesPage() {
                         </Link>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={() => handleStartEditCourse(c.id, c.title, c.description, c.category_id)}
+                            onClick={() =>
+                              handleStartEditCourse(c.id, c.title, c.description, c.category_id)
+                            }
                             className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-200"
                             title="Editar Metadados"
                           >
@@ -414,7 +427,9 @@ function AdminCoursesPage() {
                         className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800/80 dark:bg-slate-900/40 space-y-3 animate-fade-in"
                       >
                         <div className="space-y-1">
-                          <label className="text-[10px] uppercase font-bold text-slate-400">Nome</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-400">
+                            Nome
+                          </label>
                           <input
                             type="text"
                             value={editCatName}
@@ -423,7 +438,9 @@ function AdminCoursesPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] uppercase font-bold text-slate-400">Descrição</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-400">
+                            Descrição
+                          </label>
                           <textarea
                             value={editCatDesc}
                             onChange={(e) => setEditCatDesc(e.target.value)}

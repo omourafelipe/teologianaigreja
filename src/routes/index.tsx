@@ -17,7 +17,7 @@ import {
   CheckCircle,
   HelpCircle,
   BookmarkCheck,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -51,13 +51,13 @@ function PublicHomePage() {
     navigate({ to: "/course/$courseId", params: { courseId } });
   };
 
-  const filteredCourses = selectedCategoryId === "all"
-    ? courses
-    : courses.filter(c => c.category_id === selectedCategoryId);
+  const filteredCourses =
+    selectedCategoryId === "all"
+      ? courses
+      : courses.filter((c) => c.category_id === selectedCategoryId);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-200">
-      
       {/* Navbar Pública */}
       <header className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur dark:border-slate-800/60 dark:bg-slate-950/80">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -70,9 +70,15 @@ function PublicHomePage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600 dark:text-slate-400">
-            <a href="#courses" className="hover:text-blue-900 dark:hover:text-blue-400 transition">Cursos</a>
-            <a href="#features" className="hover:text-blue-900 dark:hover:text-blue-400 transition">Diferenciais</a>
-            <a href="#about" className="hover:text-blue-900 dark:hover:text-blue-400 transition">Sobre</a>
+            <a href="#courses" className="hover:text-blue-900 dark:hover:text-blue-400 transition">
+              Cursos
+            </a>
+            <a href="#features" className="hover:text-blue-900 dark:hover:text-blue-400 transition">
+              Diferenciais
+            </a>
+            <a href="#about" className="hover:text-blue-900 dark:hover:text-blue-400 transition">
+              Sobre
+            </a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -89,7 +95,10 @@ function PublicHomePage() {
             {currentUser ? (
               <div className="flex items-center gap-3">
                 <span className="hidden sm:inline text-xs font-medium text-slate-500">
-                  Olá, <span className="font-bold text-slate-700 dark:text-slate-300">{currentUser.name}</span>
+                  Olá,{" "}
+                  <span className="font-bold text-slate-700 dark:text-slate-300">
+                    {currentUser.name}
+                  </span>
                 </span>
                 <Link
                   to={currentUser.role === "teacher" ? "/admin/dashboard" : "/dashboard"}
@@ -133,11 +142,17 @@ function PublicHomePage() {
           </span>
 
           <h1 className="font-serif text-3xl font-extrabold tracking-tight sm:text-5xl leading-tight text-slate-100">
-            Formação Teológica <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">Profunda</span> para a Igreja
+            Formação Teológica{" "}
+            <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
+              Profunda
+            </span>{" "}
+            para a Igreja
           </h1>
-          
+
           <p className="mx-auto max-w-2xl text-xs sm:text-sm text-slate-350 leading-relaxed">
-            Uma plataforma acadêmica e devocional desenvolvida para o amadurecimento e discipulado bíblico. Estude a teologia bíblica e sistemática com leitura imersiva focada, esboços detalhados para professores e exercícios comentados.
+            Uma plataforma acadêmica e devocional desenvolvida para o amadurecimento e discipulado
+            bíblico. Estude a teologia bíblica e sistemática com leitura imersiva focada, esboços
+            detalhados para professores e exercícios comentados.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 pt-4">
@@ -163,16 +178,28 @@ function PublicHomePage() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="grid grid-cols-3 divide-x divide-slate-100 text-center dark:divide-slate-800">
             <div>
-              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">{totalCourses}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">Cursos Ativos</span>
+              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">
+                {totalCourses}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">
+                Cursos Ativos
+              </span>
             </div>
             <div>
-              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">{totalLessons}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">Lições Didáticas</span>
+              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">
+                {totalLessons}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">
+                Lições Didáticas
+              </span>
             </div>
             <div>
-              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">{totalCategories}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">Categorias</span>
+              <span className="block font-serif text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">
+                {totalCategories}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 block">
+                Categorias
+              </span>
             </div>
           </div>
         </div>
@@ -185,7 +212,8 @@ function PublicHomePage() {
             Nossos Cursos Teológicos
           </h2>
           <p className="mx-auto max-w-md text-xs text-slate-500 dark:text-slate-450 leading-relaxed">
-            Navegue pelos programas acadêmicos disponíveis e inicie seus estudos agora mesmo de forma gratuita.
+            Navegue pelos programas acadêmicos disponíveis e inicie seus estudos agora mesmo de
+            forma gratuita.
           </p>
         </div>
 
@@ -224,7 +252,7 @@ function PublicHomePage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCourses.map((c) => {
-              const cat = categories.find(cat => cat.id === c.category_id);
+              const cat = categories.find((cat) => cat.id === c.category_id);
               const courseMods = modules.filter((m) => m.course_id === c.id);
               const modIds = courseMods.map((m) => m.id);
               const courseLessons = lessons.filter((l) => modIds.includes(l.module_id));
@@ -247,7 +275,9 @@ function PublicHomePage() {
                   </div>
 
                   <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-3.5 dark:border-slate-800/60 text-[10px] text-slate-400 font-semibold">
-                    <span>{courseMods.length} Módulo(s) · {courseLessons.length} Lição(ões)</span>
+                    <span>
+                      {courseMods.length} Módulo(s) · {courseLessons.length} Lição(ões)
+                    </span>
                     <button
                       onClick={() => handleCourseClick(c.id)}
                       className="inline-flex items-center gap-0.5 text-blue-900 hover:text-blue-800 dark:text-blue-450 dark:hover:text-blue-400 underline font-bold"
@@ -263,14 +293,18 @@ function PublicHomePage() {
       </section>
 
       {/* Core Features Section */}
-      <section id="features" className="bg-slate-100/60 dark:bg-slate-900/10 py-16 sm:py-24 border-y border-slate-200/50 dark:border-slate-850/50">
+      <section
+        id="features"
+        className="bg-slate-100/60 dark:bg-slate-900/10 py-16 sm:py-24 border-y border-slate-200/50 dark:border-slate-850/50"
+      >
         <div className="mx-auto max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-2">
             <h2 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50 sm:text-3xl">
               Nossos Diferenciais de Aprendizado
             </h2>
             <p className="mx-auto max-w-md text-xs text-slate-500 dark:text-slate-450 leading-relaxed">
-              Estruturada especificamente para a profundidade acadêmica e fixação pedagógica de forma equilibrada.
+              Estruturada especificamente para a profundidade acadêmica e fixação pedagógica de
+              forma equilibrada.
             </p>
           </div>
 
@@ -284,7 +318,8 @@ function PublicHomePage() {
                 Leitor Acadêmico Focado
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
-                Design minimalista `max-w-prose` otimizado para longas leituras teológicas, com Table of Contents dinâmico e suporte completo a temas light/dark.
+                Design minimalista `max-w-prose` otimizado para longas leituras teológicas, com
+                Table of Contents dinâmico e suporte completo a temas light/dark.
               </p>
             </div>
 
@@ -297,7 +332,8 @@ function PublicHomePage() {
                 Guias para Professores
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
-                Todas as lições podem vir acompanhadas de orientações didáticas detalhadas, dinâmicas e roteiros de debates prontos para a aula de EBD ou célula.
+                Todas as lições podem vir acompanhadas de orientações didáticas detalhadas,
+                dinâmicas e roteiros de debates prontos para a aula de EBD ou célula.
               </p>
             </div>
 
@@ -310,7 +346,8 @@ function PublicHomePage() {
                 Exercícios de Fixação
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
-                Questionários interativos ao término de cada leitura com gabaritos detalhados comentando as respostas corretas com fundamentação bíblica.
+                Questionários interativos ao término de cada leitura com gabaritos detalhados
+                comentando as respostas corretas com fundamentação bíblica.
               </p>
             </div>
           </div>
@@ -323,7 +360,8 @@ function PublicHomePage() {
           Pronto para Aprofundar Seus Estudos?
         </h2>
         <p className="mx-auto max-w-xl text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-          Tenha acesso gratuito e imediato à biblioteca digital de teologia e EBD, e acompanhe o seu progresso didático aula após aula.
+          Tenha acesso gratuito e imediato à biblioteca digital de teologia e EBD, e acompanhe o seu
+          progresso didático aula após aula.
         </p>
         <div className="pt-2">
           <button

@@ -21,7 +21,12 @@ import {
   Code,
   Link2,
   List as ListIcon,
-  Tag
+  Tag,
+  Sparkles,
+  Play,
+  Headphones,
+  FileDown,
+  Copy,
 } from "lucide-react";
 import { useLmsStore } from "@/hooks/useLmsStore";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
@@ -46,7 +51,8 @@ function CourseBuilderPage() {
     addQuiz,
     updateQuiz,
     deleteQuiz,
-    categories
+    duplicateCourse,
+    categories,
   } = useLmsStore();
 
   const course = getFullCourse(courseId);
@@ -93,14 +99,18 @@ function CourseBuilderPage() {
     return (
       <div className="mx-auto max-w-3xl px-6 py-20 text-center">
         <h1 className="font-serif text-2xl font-bold">Curso não encontrado</h1>
-        <Link to="/admin/courses" className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400">
+        <Link
+          to="/admin/courses"
+          className="mt-4 inline-block text-sm text-blue-900 dark:text-blue-400"
+        >
           ← Voltar aos cursos
         </Link>
       </div>
     );
   }
 
-  const categoryName = categories.find((cat) => cat.id === course.category_id)?.name || "Sem Categoria";
+  const categoryName =
+    categories.find((cat) => cat.id === course.category_id)?.name || "Sem Categoria";
 
   // Course Meta Handlers
   const handleSaveMeta = () => {
@@ -108,7 +118,7 @@ function CourseBuilderPage() {
     updateCourse(course.id, {
       title: courseTitle.trim(),
       description: courseDesc.trim(),
-      category_id: courseCatId
+      category_id: courseCatId,
     });
     setIsEditingMeta(false);
   };
@@ -134,7 +144,11 @@ function CourseBuilderPage() {
   };
 
   const handleDeleteModule = (id: string, title: string) => {
-    if (confirm(`Tem certeza que deseja excluir o módulo "${title}"? Todas as lições e exercícios deste módulo serão apagados.`)) {
+    if (
+      confirm(
+        `Tem certeza que deseja excluir o módulo "${title}"? Todas as lições e exercícios deste módulo serão apagados.`,
+      )
+    ) {
       deleteModule(id);
     }
   };
@@ -152,7 +166,7 @@ function CourseBuilderPage() {
     setQuizCorrectIndex(0);
     setQuizExplanation("");
     setEditingQuizIndex(null);
-    
+
     setActiveEditorTab("content");
     setIsEditingLesson(true);
   };
@@ -162,16 +176,18 @@ function CourseBuilderPage() {
     setActiveLessonId(lesson.id);
     setLessonTitle(lesson.title);
     setLessonContent(lesson.content);
-    
+
     // Set quizzes
     const quizzes = lesson.quizzes || [];
-    setLocalQuizzes(quizzes.map((q: any) => ({
-      id: q.id,
-      question: q.question,
-      options: q.options,
-      correct_option_index: q.correct_option_index,
-      explanation: q.explanation || ""
-    })));
+    setLocalQuizzes(
+      quizzes.map((q: any) => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correct_option_index: q.correct_option_index,
+        explanation: q.explanation || "",
+      })),
+    );
 
     // Reset quiz inputs
     setQuizQuestionText("");
@@ -193,7 +209,7 @@ function CourseBuilderPage() {
     if (activeLessonId === null) {
       // Create New Lesson
       const newLes = addLesson(activeModuleId, lessonTitle.trim(), lessonContent);
-      
+
       // Save Quizzes associated with this new lesson
       localQuizzes.forEach((q) => {
         addQuiz(newLes.id, q.question, q.options, q.correct_option_index, q.explanation);
@@ -202,17 +218,17 @@ function CourseBuilderPage() {
       // Update Existing Lesson
       updateLesson(activeLessonId, {
         title: lessonTitle.trim(),
-        content: lessonContent
+        content: lessonContent,
       });
 
       // Synchronize Quizzes: Since quizzes might be added, deleted or modified, we'll reconcile
-      const existingQuizzes = course.modules
-        .flatMap(m => m.lessons)
-        .find(l => l.id === activeLessonId)?.quizzes || [];
+      const existingQuizzes =
+        course.modules.flatMap((m) => m.lessons).find((l) => l.id === activeLessonId)?.quizzes ||
+        [];
 
       // 1. Delete quizzes that are no longer in localQuizzes
-      const localQuizIds = localQuizzes.map(q => (q as any).id).filter(Boolean);
-      existingQuizzes.forEach(eq => {
+      const localQuizIds = localQuizzes.map((q) => (q as any).id).filter(Boolean);
+      existingQuizzes.forEach((eq) => {
         if (!localQuizIds.includes(eq.id)) {
           deleteQuiz(eq.id);
         }
@@ -227,7 +243,7 @@ function CourseBuilderPage() {
             question: q.question,
             options: q.options,
             correct_option_index: q.correct_option_index,
-            explanation: q.explanation
+            explanation: q.explanation,
           });
         } else {
           // Add new
@@ -246,32 +262,77 @@ function CourseBuilderPage() {
     }
   };
 
+  const handleAiGenerateQuiz = () => {
+    let question =
+      "Com base no texto da lição, qual das seguintes alternativas define a exegese teológica?";
+    let options = [
+      "A extração fiel do significado pretendido pelo autor original.",
+      "A inserção de preconceitos modernos no texto bíblico.",
+      "O estudo exclusivo da arqueologia na Mesopotâmia.",
+      "A tradução sistemática de epístolas paulinas apenas.",
+    ];
+    let explanation =
+      "A exegese consiste em retirar do texto bíblico a sua mensagem original, analisando os contextos históricos, gramaticais e literários.";
+
+    const lower = lessonContent.toLowerCase();
+    if (lower.includes("abismo") || lower.includes("cultural")) {
+      question = "Qual o significado de abismo cultural na hermenêutica bíblica?";
+      options = [
+        "A barreira de costumes e tradições entre a época bíblica e a do leitor atual.",
+        "A distância em quilômetros do Egito até a Terra Prometida.",
+        "A diferença entre os idiomas grego antigo e aramaico bíblico.",
+        "O estudo arqueológico da arquitetura de templos romanos.",
+      ];
+      explanation =
+        "O abismo cultural representa as diferenças de cultura, visão de mundo e hábitos entre os escritores bíblicos originais e nós hoje.";
+    } else if (lower.includes("contexto") || lower.includes("pretexto")) {
+      question = "De acordo com as regras de hermenêutica literária, por que o contexto é rei?";
+      options = [
+        "Porque ler versículos isoladamente pode gerar distorções e pretexto para heresias.",
+        "Porque o rei de Israel determinava quais livros seriam canônicos.",
+        "Porque cada capítulo representa um reinado histórico diferente na Bíblia.",
+        "Geografia dos montes bíblicos.",
+      ];
+      explanation =
+        "Isolar passagens cria doutrinas falsas. A boa hermenêutica sempre avalia o contexto literário (parágrafos, capítulos, livro inteiro).";
+    }
+
+    const aiGeneratedQuiz = {
+      question,
+      options,
+      correct_option_index: 0,
+      explanation,
+    };
+
+    setLocalQuizzes((prev) => [...prev, aiGeneratedQuiz]);
+  };
+
   // Quiz Handlers inside Lesson Editor
   const handleSaveQuizQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (!quizQuestionText.trim()) return;
-    if (quizOptions.some(opt => !opt.trim())) {
+    if (quizOptions.some((opt) => !opt.trim())) {
       alert("Por favor, preencha todas as 4 alternativas.");
       return;
     }
 
     const quizData = {
       question: quizQuestionText.trim(),
-      options: quizOptions.map(o => o.trim()),
+      options: quizOptions.map((o) => o.trim()),
       correct_option_index: quizCorrectIndex,
-      explanation: quizExplanation.trim()
+      explanation: quizExplanation.trim(),
     };
 
     if (editingQuizIndex === null) {
       // Add new local quiz
-      setLocalQuizzes(prev => [...prev, quizData]);
+      setLocalQuizzes((prev) => [...prev, quizData]);
     } else {
       // Edit existing local quiz
-      setLocalQuizzes(prev => {
+      setLocalQuizzes((prev) => {
         const updated = [...prev];
         updated[editingQuizIndex] = {
           ...(updated[editingQuizIndex] as any), // keep id if exists
-          ...quizData
+          ...quizData,
         };
         return updated;
       });
@@ -294,7 +355,7 @@ function CourseBuilderPage() {
   };
 
   const handleDeleteQuizQuestion = (index: number) => {
-    setLocalQuizzes(prev => prev.filter((_, idx) => idx !== index));
+    setLocalQuizzes((prev) => prev.filter((_, idx) => idx !== index));
     if (editingQuizIndex === index) {
       setEditingQuizIndex(null);
       setQuizQuestionText("");
@@ -313,7 +374,7 @@ function CourseBuilderPage() {
     const end = textarea.selectionEnd;
     const text = textarea.value;
     const selectedText = text.substring(start, end);
-    
+
     let replacement = "";
     if (syntax === "bold") replacement = `**${selectedText || "negrito"}**`;
     else if (syntax === "italic") replacement = `*${selectedText || "itálico"}*`;
@@ -323,10 +384,18 @@ function CourseBuilderPage() {
     else if (syntax === "code") replacement = `\`${selectedText || "código"}\``;
     else if (syntax === "link") replacement = `[${selectedText || "link"}](https://exemplo.com)`;
     else if (syntax === "list") replacement = `\n- Item 1\n- Item 2\n`;
+    else if (syntax === "video")
+      replacement = `\n[video](https://www.w3schools.com/html/mov_bbb.mp4)\n`;
+    else if (syntax === "audio")
+      replacement = `\n[audio](https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3)\n`;
+    else if (syntax === "pdf")
+      replacement = `\n[pdf](https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf)\n`;
+    else if (syntax === "poll")
+      replacement = `\n[enquete](Qual abismo interpretativo você acha mais difícil?)\n`;
 
     const newContent = text.substring(0, start) + replacement + text.substring(end);
     setLessonContent(newContent);
-    
+
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + replacement.length, start + replacement.length);
@@ -445,24 +514,104 @@ function CourseBuilderPage() {
         {/* Markdown Toolbar */}
         {activeEditorTab === "content" && (
           <div className="flex flex-wrap gap-1 border-b border-slate-200/60 bg-slate-50/50 px-5 py-1.5 dark:border-slate-800/60 dark:bg-slate-900/30">
-            <button onClick={() => insertMarkdown("bold")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Negrito"><Bold className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("italic")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Itálico"><Italic className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("h2")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Título H2"><Heading2 className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("h3")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Título H3"><Heading3 className="h-3.5 w-3.5" /></button>
+            <button
+              onClick={() => insertMarkdown("bold")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Negrito"
+            >
+              <Bold className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("italic")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Itálico"
+            >
+              <Italic className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("h2")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Título H2"
+            >
+              <Heading2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("h3")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Título H3"
+            >
+              <Heading3 className="h-3.5 w-3.5" />
+            </button>
             <div className="w-[1px] bg-slate-200 dark:bg-slate-800 mx-1.5 my-1"></div>
-            <button onClick={() => insertMarkdown("quote")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Citação"><Quote className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("code")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Código"><Code className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("link")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Link"><Link2 className="h-3.5 w-3.5" /></button>
-            <button onClick={() => insertMarkdown("list")} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition" title="Lista"><ListIcon className="h-3.5 w-3.5" /></button>
+            <button
+              onClick={() => insertMarkdown("quote")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Citação"
+            >
+              <Quote className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("code")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Código"
+            >
+              <Code className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("link")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Link"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("list")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition"
+              title="Lista"
+            >
+              <ListIcon className="h-3.5 w-3.5" />
+            </button>
+            <div className="w-[1px] bg-slate-200 dark:bg-slate-800 mx-1.5 my-1"></div>
+            <button
+              onClick={() => insertMarkdown("video")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition text-blue-900 dark:text-blue-400"
+              title="Inserir Bloco de Vídeo"
+            >
+              <Play className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("audio")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition text-teal-705 dark:text-teal-400"
+              title="Inserir Bloco de Áudio"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("pdf")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition text-red-500"
+              title="Inserir Bloco de PDF"
+            >
+              <FileDown className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => insertMarkdown("poll")}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition text-amber-500"
+              title="Inserir Bloco de Enquete"
+            >
+              <Tag className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
 
         {/* Tab Contents */}
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50 dark:bg-slate-900/30">
           {activeEditorTab === "content" && (
-            <div className="grid gap-6 h-full min-h-[350px]" style={{
-              gridTemplateColumns: editorMode === "split" ? "1fr 1fr" : "1fr"
-            }}>
+            <div
+              className="grid gap-6 h-full min-h-[350px]"
+              style={{
+                gridTemplateColumns: editorMode === "split" ? "1fr 1fr" : "1fr",
+              }}
+            >
               {(editorMode === "edit" || editorMode === "split") && (
                 <textarea
                   id="lesson-textarea"
@@ -474,9 +623,13 @@ function CourseBuilderPage() {
               )}
               {(editorMode === "preview" || editorMode === "split") && (
                 <div className="h-full min-h-[300px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-850 dark:bg-slate-950/20">
-                  <span className="block text-[8px] uppercase tracking-wider font-bold text-slate-400 mb-4 border-b border-slate-100 dark:border-slate-850 pb-2">Artigo - Visualização</span>
+                  <span className="block text-[8px] uppercase tracking-wider font-bold text-slate-400 mb-4 border-b border-slate-100 dark:border-slate-850 pb-2">
+                    Artigo - Visualização
+                  </span>
                   <div className="max-w-none">
-                    <MarkdownRenderer content={lessonContent || "*Escreva no editor para visualizar...*"} />
+                    <MarkdownRenderer
+                      content={lessonContent || "*Escreva no editor para visualizar...*"}
+                    />
                   </div>
                 </div>
               )}
@@ -487,9 +640,21 @@ function CourseBuilderPage() {
             <div className="grid gap-6 lg:grid-cols-5 items-start">
               {/* Question Editor Form */}
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/40 lg:col-span-2 space-y-4">
-                <h3 className="font-serif text-xs font-bold text-slate-800 dark:text-slate-100">
-                  {editingQuizIndex === null ? "Adicionar Questão" : "Editar Questão"}
-                </h3>
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2 dark:border-slate-850">
+                  <h3 className="font-serif text-xs font-bold text-slate-800 dark:text-slate-100">
+                    {editingQuizIndex === null ? "Adicionar Questão" : "Editar Questão"}
+                  </h3>
+                  {editingQuizIndex === null && (
+                    <button
+                      type="button"
+                      onClick={handleAiGenerateQuiz}
+                      className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-1 text-[9px] font-bold text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-400 transition animate-pulse"
+                      title="Gerar questão inteligente com base no texto da lição"
+                    >
+                      <Sparkles className="h-3 w-3" /> Gerar com IA
+                    </button>
+                  )}
+                </div>
                 <form onSubmit={handleSaveQuizQuestion} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-wider text-slate-450 block">
@@ -625,7 +790,7 @@ function CourseBuilderPage() {
                                   isCorrect
                                     ? "border-emerald-300 bg-emerald-50/20 text-emerald-800 dark:border-emerald-950/20 dark:bg-emerald-950/30 dark:text-emerald-450"
                                     : "border-slate-100 text-slate-500 dark:border-slate-850 dark:text-slate-400"
-                                  }`}
+                                }`}
                               >
                                 <span className="font-semibold block text-[9px] uppercase">
                                   Opção {String.fromCharCode(65 + oIdx)} {isCorrect && " (CORRETA)"}
@@ -639,7 +804,9 @@ function CourseBuilderPage() {
                         {/* Explanation */}
                         {q.explanation && (
                           <div className="bg-slate-50 p-2.5 rounded border border-slate-100 text-[10px] leading-relaxed text-slate-600 dark:bg-slate-950/30 dark:border-slate-850 dark:text-slate-400">
-                            <span className="font-semibold block mb-0.5 text-slate-450">Comentário do Gabarito:</span>
+                            <span className="font-semibold block mb-0.5 text-slate-450">
+                              Comentário do Gabarito:
+                            </span>
                             {q.explanation}
                           </div>
                         )}
@@ -659,21 +826,37 @@ function CourseBuilderPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Navigation & Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/admin/courses"
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div>
-          <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">
-            Estrutura do Curso
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Adicione módulos, redija lições em Markdown e crie exercícios de fixação.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/courses"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">
+              Estrutura do Curso
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Adicione módulos, redija lições em Markdown e crie exercícios de fixação.
+            </p>
+          </div>
         </div>
+
+        <button
+          onClick={() => {
+            const duplicated = duplicateCourse(course.id);
+            if (duplicated) {
+              alert(`Curso duplicado com sucesso! Redirecionando para a nova cópia...`);
+              navigate({ to: `/admin/course/${duplicated.id}/builder` });
+            }
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-750 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-350 dark:hover:bg-slate-900 transition"
+          title="Criar uma cópia integral deste curso"
+        >
+          <Copy className="h-3.5 w-3.5" /> Duplicar Curso
+        </button>
       </div>
 
       {/* Course Meta Panel */}

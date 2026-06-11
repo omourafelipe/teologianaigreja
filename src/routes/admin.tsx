@@ -2,7 +2,15 @@ import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tansta
 import { useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useLmsStore } from "@/hooks/useLmsStore";
-import { LayoutDashboard, FolderKanban, ShieldAlert, ArrowLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  ShieldAlert,
+  ArrowLeft,
+  UserCheck,
+  HelpCircle,
+  BarChart2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -44,7 +52,8 @@ function AdminLayout() {
             Acesso Restrito
           </h2>
           <p className="mt-2 text-xs text-slate-500">
-            Esta área é destinada apenas a professores. Você está sendo redirecionado para a biblioteca...
+            Esta área é destinada apenas a professores. Você está sendo redirecionado para a
+            biblioteca...
           </p>
           <Link
             to="/dashboard"
@@ -80,6 +89,24 @@ function AdminLayout() {
       label: "Gerenciar Cursos",
       icon: FolderKanban,
       active: location.pathname.startsWith("/admin/courses"),
+    },
+    {
+      to: "/admin/users",
+      label: "Gestão de Alunos",
+      icon: UserCheck,
+      active: location.pathname === "/admin/users",
+    },
+    {
+      to: "/admin/questions",
+      label: "Banco de Questões",
+      icon: HelpCircle,
+      active: location.pathname === "/admin/questions",
+    },
+    {
+      to: "/admin/analytics",
+      label: "Analytics & Evasão",
+      icon: BarChart2,
+      active: location.pathname === "/admin/analytics",
     },
   ];
 

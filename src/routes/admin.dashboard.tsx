@@ -144,10 +144,13 @@ function AdminDashboard() {
               </div>
             ) : (
               courses.slice(0, 3).map((course) => {
-                const categoryName = categories.find((c) => c.id === course.category_id)?.name || "Sem Categoria";
+                const categoryName =
+                  categories.find((c) => c.id === course.category_id)?.name || "Sem Categoria";
                 const courseMods = modules.filter((m) => m.course_id === course.id);
                 const modIds = courseMods.map((m) => m.id);
-                const courseLessonsCount = lessons.filter((l) => modIds.includes(l.module_id)).length;
+                const courseLessonsCount = lessons.filter((l) =>
+                  modIds.includes(l.module_id),
+                ).length;
 
                 return (
                   <div
@@ -163,7 +166,8 @@ function AdminDashboard() {
                           {course.title}
                         </h4>
                         <span className="block text-[10px] text-slate-450 mt-0.5">
-                          {categoryName} · {courseMods.length} Módulo(s) · {courseLessonsCount} Lição(ões)
+                          {categoryName} · {courseMods.length} Módulo(s) · {courseLessonsCount}{" "}
+                          Lição(ões)
                         </span>
                       </div>
                     </div>

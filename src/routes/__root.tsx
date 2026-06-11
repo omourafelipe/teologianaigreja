@@ -79,17 +79,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Teologia na Igreja" },
-      { name: "description", content: "EBD Digital Reader is a client-side academic reading platform for theological content." },
+      {
+        name: "description",
+        content:
+          "EBD Digital Reader is a client-side academic reading platform for theological content.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Teologia na Igreja" },
-      { property: "og:description", content: "EBD Digital Reader is a client-side academic reading platform for theological content." },
+      {
+        property: "og:description",
+        content:
+          "EBD Digital Reader is a client-side academic reading platform for theological content.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Teologia na Igreja" },
-      { name: "twitter:description", content: "EBD Digital Reader is a client-side academic reading platform for theological content." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png" },
+      {
+        name: "twitter:description",
+        content:
+          "EBD Digital Reader is a client-side academic reading platform for theological content.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

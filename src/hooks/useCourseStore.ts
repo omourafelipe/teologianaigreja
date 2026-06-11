@@ -40,8 +40,16 @@ export interface Category {
 // Categorias iniciais padrão
 const defaultCategories: Category[] = [
   { id: "cat-biblia", name: "Bíblia", description: "Estudos textuais e exegéticos das Escrituras" },
-  { id: "cat-teologia", name: "Teologia", description: "Teologia sistemática, bíblica e histórica" },
-  { id: "cat-estudos", name: "Teologia e Estudo", description: "Cursos práticos e estudos bíblicos gerais" }
+  {
+    id: "cat-teologia",
+    name: "Teologia",
+    description: "Teologia sistemática, bíblica e histórica",
+  },
+  {
+    id: "cat-estudos",
+    name: "Teologia e Estudo",
+    description: "Cursos práticos e estudos bíblicos gerais",
+  },
 ];
 
 let globalCourses: Course[] = [];
@@ -53,8 +61,12 @@ const isClient = typeof window !== "undefined";
 const seedInitialData = () => {
   const seeded = [...defaultCourses];
   // Seed the first lesson of the hermeneutica-1 course with a teacher plan and a quiz
-  const hermeneuticaCourse = seeded.find(c => c.id === "curso-hermeneutica-1");
-  if (hermeneuticaCourse && hermeneuticaCourse.modules[0] && hermeneuticaCourse.modules[0].lessons[0]) {
+  const hermeneuticaCourse = seeded.find((c) => c.id === "curso-hermeneutica-1");
+  if (
+    hermeneuticaCourse &&
+    hermeneuticaCourse.modules[0] &&
+    hermeneuticaCourse.modules[0].lessons[0]
+  ) {
     hermeneuticaCourse.modules[0].lessons[0].teacherPlan = `# Guia do Professor: Introdução à Hermenêutica
     
 > "O objetivo deste roteiro é ajudar a liderar a classe através de um debate prático sobre a interpretação bíblica."
@@ -81,10 +93,11 @@ const seedInitialData = () => {
           "Apenas a cópia manual de documentos sagrados.",
           "A ciência e arte de interpretar as Escrituras.",
           "O estudo da história geográfica de Israel.",
-          "A pregação pública e exortação."
+          "A pregação pública e exortação.",
         ],
         correctOptionIndex: 1,
-        explanation: "Hermenêutica deriva do grego 'hermeneuein', que se refere a interpretar, explicar ou traduzir. É uma ciência por ter regras claras e uma arte por requerer sensibilidade literária e espiritual."
+        explanation:
+          "Hermenêutica deriva do grego 'hermeneuein', que se refere a interpretar, explicar ou traduzir. É uma ciência por ter regras claras e uma arte por requerer sensibilidade literária e espiritual.",
       },
       {
         id: "q-2",
@@ -93,11 +106,12 @@ const seedInitialData = () => {
           "Doutrinário, Denominacional e Político.",
           "Histórico, Cultural e Linguístico.",
           "Linguístico, Filosófico e Geográfico.",
-          "Social, Psicológico e Acadêmico."
+          "Social, Psicológico e Acadêmico.",
         ],
         correctOptionIndex: 1,
-        explanation: "Os três abismos básicos são o Histórico (tempo de distância), Cultural (diferenças de costumes de civilizações antigas) e Linguístico (hebraico/aramaico/grego antigos em comparação aos idiomas modernos)."
-      }
+        explanation:
+          "Os três abismos básicos são o Histórico (tempo de distância), Cultural (diferenças de costumes de civilizações antigas) e Linguístico (hebraico/aramaico/grego antigos em comparação aos idiomas modernos).",
+      },
     ];
   }
   return seeded;
@@ -116,7 +130,6 @@ if (isClient) {
   } catch (e) {
     globalCourses = seedInitialData();
   }
-
 
   try {
     const savedCategories = localStorage.getItem("ebd_categories");
@@ -161,7 +174,7 @@ export function useCourseStore() {
     const newCourse: Course = {
       ...course,
       id: "course-" + Math.random().toString(36).substring(2, 9),
-      modules: []
+      modules: [],
     };
     globalCourses = [...globalCourses, newCourse];
     notify();
@@ -169,9 +182,7 @@ export function useCourseStore() {
   };
 
   const updateCourse = (id: string, updates: Partial<Omit<Course, "id" | "modules">>) => {
-    globalCourses = globalCourses.map((c) =>
-      c.id === id ? { ...c, ...updates } : c
-    );
+    globalCourses = globalCourses.map((c) => (c.id === id ? { ...c, ...updates } : c));
     notify();
   };
 
@@ -182,11 +193,11 @@ export function useCourseStore() {
 
   // Operações de Categoria
   const getCategories = () => globalCategories;
-  
+
   const addCategory = (category: Omit<Category, "id">) => {
     const newCategory: Category = {
       ...category,
-      id: "category-" + Math.random().toString(36).substring(2, 9)
+      id: "category-" + Math.random().toString(36).substring(2, 9),
     };
     globalCategories = [...globalCategories, newCategory];
     notify();
@@ -194,9 +205,7 @@ export function useCourseStore() {
   };
 
   const updateCategory = (id: string, updates: Partial<Omit<Category, "id">>) => {
-    globalCategories = globalCategories.map((c) =>
-      c.id === id ? { ...c, ...updates } : c
-    );
+    globalCategories = globalCategories.map((c) => (c.id === id ? { ...c, ...updates } : c));
     notify();
   };
 
@@ -210,7 +219,7 @@ export function useCourseStore() {
     const newModule: Module = {
       id: "mod-" + Math.random().toString(36).substring(2, 9),
       title,
-      lessons: []
+      lessons: [],
     };
     globalCourses = globalCourses.map((c) => {
       if (c.id === courseId) {
@@ -227,7 +236,7 @@ export function useCourseStore() {
       if (c.id === courseId) {
         return {
           ...c,
-          modules: c.modules.map((m) => (m.id === moduleId ? { ...m, title } : m))
+          modules: c.modules.map((m) => (m.id === moduleId ? { ...m, title } : m)),
         };
       }
       return c;
@@ -240,7 +249,7 @@ export function useCourseStore() {
       if (c.id === courseId) {
         return {
           ...c,
-          modules: c.modules.filter((m) => m.id !== moduleId)
+          modules: c.modules.filter((m) => m.id !== moduleId),
         };
       }
       return c;
@@ -255,14 +264,14 @@ export function useCourseStore() {
     title: string,
     content: string,
     teacherPlan?: string,
-    quiz?: QuizQuestion[]
+    quiz?: QuizQuestion[],
   ) => {
     const newLesson: Lesson = {
       id: "lesson-" + Math.random().toString(36).substring(2, 9),
       title,
       content,
       teacherPlan,
-      quiz
+      quiz,
     };
     globalCourses = globalCourses.map((c) => {
       if (c.id === courseId) {
@@ -273,7 +282,7 @@ export function useCourseStore() {
               return { ...m, lessons: [...m.lessons, newLesson] };
             }
             return m;
-          })
+          }),
         };
       }
       return c;
@@ -282,7 +291,12 @@ export function useCourseStore() {
     return newLesson;
   };
 
-  const updateLesson = (courseId: string, moduleId: string, lessonId: string, updates: Partial<Omit<Lesson, "id">>) => {
+  const updateLesson = (
+    courseId: string,
+    moduleId: string,
+    lessonId: string,
+    updates: Partial<Omit<Lesson, "id">>,
+  ) => {
     globalCourses = globalCourses.map((c) => {
       if (c.id === courseId) {
         return {
@@ -291,11 +305,11 @@ export function useCourseStore() {
             if (m.id === moduleId) {
               return {
                 ...m,
-                lessons: m.lessons.map((l) => (l.id === lessonId ? { ...l, ...updates } : l))
+                lessons: m.lessons.map((l) => (l.id === lessonId ? { ...l, ...updates } : l)),
               };
             }
             return m;
-          })
+          }),
         };
       }
       return c;
@@ -312,11 +326,11 @@ export function useCourseStore() {
             if (m.id === moduleId) {
               return {
                 ...m,
-                lessons: m.lessons.filter((l) => l.id !== lessonId)
+                lessons: m.lessons.filter((l) => l.id !== lessonId),
               };
             }
             return m;
-          })
+          }),
         };
       }
       return c;
@@ -327,7 +341,7 @@ export function useCourseStore() {
   // Helper para linearizar as lições (essencial para anterior/próxima lição)
   const getFlatLessons = (course: Course) => {
     return course.modules.flatMap((m) =>
-      m.lessons.map((l) => ({ moduleId: m.id, moduleTitle: m.title, lesson: l }))
+      m.lessons.map((l) => ({ moduleId: m.id, moduleTitle: m.title, lesson: l })),
     );
   };
 
@@ -341,7 +355,7 @@ export function useCourseStore() {
       course,
       entry: flat[idx],
       prev: idx > 0 ? flat[idx - 1] : null,
-      next: idx < flat.length - 1 ? flat[idx + 1] : null
+      next: idx < flat.length - 1 ? flat[idx + 1] : null,
     };
   };
 
@@ -364,6 +378,6 @@ export function useCourseStore() {
     updateLesson,
     deleteLesson,
     getFlatLessons,
-    findLesson
+    findLesson,
   };
 }

@@ -139,7 +139,9 @@ function LoginPage() {
               >
                 <GraduationCap className="h-4 w-4 text-amber-600 shrink-0" />
                 <div className="min-w-0">
-                  <span className="block text-[9px] uppercase font-bold text-slate-400">Professor</span>
+                  <span className="block text-[9px] uppercase font-bold text-slate-400">
+                    Professor
+                  </span>
                   <span className="block truncate text-[10px]">professor@ebd.com</span>
                 </div>
               </button>
