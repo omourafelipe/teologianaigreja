@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -32,6 +33,11 @@ import { Route as AdminCourseCourseIdBuilderRouteImport } from './routes/admin.c
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tutor': typeof TutorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tutor': typeof TutorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tutor': typeof TutorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/register'
+    | '/sitemap.xml'
     | '/tutor'
     | '/admin/analytics'
     | '/admin/courses'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/register'
+    | '/sitemap.xml'
     | '/tutor'
     | '/admin/analytics'
     | '/admin/courses'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/register'
+    | '/sitemap.xml'
     | '/tutor'
     | '/admin/analytics'
     | '/admin/courses'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TutorRoute: typeof TutorRoute
   CertificateCodeRoute: typeof CertificateCodeRoute
   CourseCourseIdRoute: typeof CourseCourseIdRouteWithChildren
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -451,6 +471,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TutorRoute: TutorRoute,
   CertificateCodeRoute: CertificateCodeRoute,
   CourseCourseIdRoute: CourseCourseIdRouteWithChildren,
@@ -459,13 +480,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

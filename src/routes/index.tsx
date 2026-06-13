@@ -22,6 +22,39 @@ import {
 
 export const Route = createFileRoute("/")({
   component: PublicHomePage,
+  head: () => ({
+    meta: [
+      { title: "Teologia na Igreja — Escola Bíblica Digital com cursos gratuitos" },
+      {
+        name: "description",
+        content:
+          "Cursos gratuitos de teologia, hermenêutica e estudos bíblicos com leitura imersiva, guias para professores e exercícios comentados.",
+      },
+      {
+        property: "og:title",
+        content: "Teologia na Igreja — Escola Bíblica Digital com cursos gratuitos",
+      },
+      {
+        property: "og:description",
+        content:
+          "Plataforma de EBD digital com formação teológica gratuita: teologia bíblica, hermenêutica e história da igreja.",
+      },
+      { property: "og:url", content: "https://teologianaigreja.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://teologianaigreja.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Teologia na Igreja",
+          url: "https://teologianaigreja.lovable.app",
+          inLanguage: "pt-BR",
+        }),
+      },
+    ],
+  }),
 });
 
 function PublicHomePage() {

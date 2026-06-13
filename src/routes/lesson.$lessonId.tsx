@@ -19,6 +19,36 @@ import { LessonTOC } from "@/components/lesson/LessonTOC";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   component: LessonPage,
+  head: ({ params }) => {
+    const url = `https://teologianaigreja.lovable.app/lesson/${params.lessonId}`;
+    const title = "Lição — Teologia na Igreja";
+    const description =
+      "Lição de teologia com leitura imersiva, exercícios e tutor IA na Escola Bíblica Digital Teologia na Igreja.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "article" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: title,
+            description,
+            url,
+            author: { "@type": "Organization", name: "Teologia na Igreja" },
+          }),
+        },
+      ],
+    };
+  },
 });
 
 interface HeadingItem {

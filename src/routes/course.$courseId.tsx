@@ -6,6 +6,40 @@ import { useLmsStore } from "@/hooks/useLmsStore";
 
 export const Route = createFileRoute("/course/$courseId")({
   component: CoursePage,
+  head: ({ params }) => {
+    const url = `https://teologianaigreja.lovable.app/course/${params.courseId}`;
+    const title = "Curso de Teologia — Teologia na Igreja";
+    const description =
+      "Grade de módulos e lições deste curso teológico da Escola Bíblica Digital Teologia na Igreja.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Course",
+            name: title,
+            description,
+            url,
+            provider: {
+              "@type": "EducationalOrganization",
+              name: "Teologia na Igreja",
+              url: "https://teologianaigreja.lovable.app",
+            },
+          }),
+        },
+      ],
+    };
+  },
 });
 
 function CoursePage() {

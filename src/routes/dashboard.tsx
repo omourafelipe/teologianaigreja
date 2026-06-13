@@ -20,6 +20,24 @@ import { useLmsStore } from "@/hooks/useLmsStore";
 
 export const Route = createFileRoute("/dashboard")({
   component: StudentDashboard,
+  head: () => ({
+    meta: [
+      { title: "Meu Painel — Teologia na Igreja" },
+      {
+        name: "description",
+        content:
+          "Acompanhe seu progresso, XP, streak e biblioteca de cursos teológicos no seu painel da Escola Bíblica Digital.",
+      },
+      { property: "og:title", content: "Meu Painel — Teologia na Igreja" },
+      {
+        property: "og:description",
+        content: "Painel pessoal com cursos, progresso e gamificação.",
+      },
+      { property: "og:url", content: "https://teologianaigreja.lovable.app/dashboard" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://teologianaigreja.lovable.app/dashboard" }],
+  }),
 });
 
 function StudentDashboard() {
@@ -204,9 +222,9 @@ function StudentDashboard() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Nível Atual
                   </span>
-                  <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100">
+                  <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">
                     {xpInfo.level}
-                  </h3>
+                  </h2>
                 </div>
               </div>
               <span className="rounded-full bg-blue-50/50 px-2 py-0.5 text-[9px] font-bold text-blue-900 dark:bg-blue-950/30 dark:text-blue-400">
@@ -244,9 +262,9 @@ function StudentDashboard() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Streak de Estudos
                   </span>
-                  <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100">
+                  <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">
                     {currentUser.streak || 0} Dias Seguidos
-                  </h3>
+                  </h2>
                 </div>
               </div>
 
