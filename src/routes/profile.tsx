@@ -338,10 +338,10 @@ function ProfilePage() {
 
         {/* Certificates Section */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <h3 className="font-serif text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <h2 className="font-serif text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-blue-900 dark:text-blue-400" /> Seus Certificados
             Digitais
-          </h3>
+          </h2>
           <p className="text-xs text-slate-500 mb-6">
             Certificados gerados automaticamente e verificáveis publicamente com QR Code após
             concluir 100% de um curso.
