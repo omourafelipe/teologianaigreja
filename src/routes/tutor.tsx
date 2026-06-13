@@ -7,6 +7,24 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/tutor")({
   component: TutorPage,
+  head: () => ({
+    meta: [
+      { title: "Tutor Teológico IA — Teologia na Igreja" },
+      {
+        name: "description",
+        content:
+          "Tire dúvidas de teologia, exegese e hermenêutica com o Tutor IA da Escola Bíblica Digital Teologia na Igreja.",
+      },
+      { property: "og:title", content: "Tutor Teológico IA — Teologia na Igreja" },
+      {
+        property: "og:description",
+        content:
+          "Converse com o Tutor IA sobre exegese, hermenêutica e história da igreja.",
+      },
+      { property: "og:url", content: "https://teologianaigreja.lovable.app/tutor" },
+    ],
+    links: [{ rel: "canonical", href: "https://teologianaigreja.lovable.app/tutor" }],
+  }),
 });
 
 interface ChatMessage {
@@ -105,6 +123,7 @@ function TutorPage() {
 
   return (
     <Layout>
+      <h1 className="sr-only">Tutor Teológico IA</h1>
       <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Presets and Guidance sidebar */}

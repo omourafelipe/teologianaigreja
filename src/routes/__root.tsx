@@ -78,38 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Teologia na Igreja" },
+      { title: "Teologia na Igreja — Escola Bíblica Digital" },
       {
         name: "description",
         content:
-          "EBD Digital Reader is a client-side academic reading platform for theological content.",
+          "Plataforma acadêmica de Escola Bíblica Digital com cursos de teologia, hermenêutica e estudos bíblicos para a igreja.",
       },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Teologia na Igreja" },
-      {
-        property: "og:description",
-        content:
-          "EBD Digital Reader is a client-side academic reading platform for theological content.",
-      },
+      { name: "author", content: "Teologia na Igreja" },
+      { property: "og:site_name", content: "Teologia na Igreja" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Teologia na Igreja" },
-      {
-        name: "twitter:description",
-        content:
-          "EBD Digital Reader is a client-side academic reading platform for theological content.",
-      },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f7ab5ccc-1b41-4df0-8c56-0777c3016400/id-preview-15465501--d2b0fae3-7746-422e-bd71-93a621e459a7.lovable.app-1781041087622.png",
-      },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -118,6 +96,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "Teologia na Igreja",
+          url: "https://teologianaigreja.lovable.app",
+          description:
+            "Escola Bíblica Digital com cursos de teologia, hermenêutica e estudos bíblicos.",
+        }),
       },
     ],
   }),

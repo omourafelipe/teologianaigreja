@@ -28,6 +28,24 @@ import {
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
+  head: () => ({
+    meta: [
+      { title: "Meu Perfil — Teologia na Igreja" },
+      {
+        name: "description",
+        content:
+          "Veja seu nível, medalhas, certificados e estatísticas de estudo na Escola Bíblica Digital Teologia na Igreja.",
+      },
+      { property: "og:title", content: "Meu Perfil — Teologia na Igreja" },
+      {
+        property: "og:description",
+        content: "Perfil de aluno com medalhas, certificados e progresso.",
+      },
+      { property: "og:url", content: "https://teologianaigreja.lovable.app/profile" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://teologianaigreja.lovable.app/profile" }],
+  }),
 });
 
 // All possible badges in the game
