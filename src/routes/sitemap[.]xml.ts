@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { courses } from "@/data/mockData";
 
 const BASE_URL = "https://teologianaigreja.lovable.app";
 
@@ -16,9 +17,29 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/tutor", changefreq: "monthly", priority: "0.6" },
+          { path: "/forum", changefreq: "weekly", priority: "0.5" },
+          { path: "/groups", changefreq: "weekly", priority: "0.5" },
           { path: "/login", changefreq: "yearly", priority: "0.3" },
           { path: "/register", changefreq: "yearly", priority: "0.3" },
         ];
+
+        // Dynamic course and lesson pages from data source
+        for (const course of courses) {
+          entries.push({
+            path: `/course/${course.id}`,
+            changefreq: "monthly",
+            priority: "0.7",
+          });
+          for (const mod of course.modules) {
+            for (const lesson of mod.lessons) {
+              entries.push({
+                path: `/course/${course.id}/lesson/${lesson.id}`,
+                changefreq: "monthly",
+                priority: "0.6",
+              });
+            }
+          }
+        }
 
         const urls = entries.map((e) =>
           [
